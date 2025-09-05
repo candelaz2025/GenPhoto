@@ -27,6 +27,7 @@ Lighting should be natural and cinematic, with realistic highlights, soft shadow
 Textures should be ultra-detailed: smooth plastic finish on the doll, fabric-like texture on clothing, glossy printed cardboard on the packaging box, and realistic reflections on the car windshield.
 Shot as if captured with a professional full-frame DSLR camera, using a 50mm lens, f/1.8 for shallow depth of field, 8K resolution, ultra-photorealistic rendering.
 Studio-quality clarity, extremely sharp details, perfect color grading.`;
+const selfiePrompt = `สร้างภาพเซลฟี่กลุ่มแบบไฮเปอร์เรียลลิสติก โดยใช้ภาพที่อัปโหลด (คงใบหน้า เสื้อผ้า และลุคธรรมชาติจากภาพต้นฉบับไว้) เขากำลังถือสมาร์ทโฟนเพื่อถ่ายเซลฟี่ รอบตัวเขามีสมาชิก Marvel ได้แก่ Iron Man, Captain America, Thor, Hulk, Black Widow และ Spider-Man — ทุกคนยิ้มและโพสต์ท่าอย่างเป็นกันเองเหมือนเพื่อนสนิท บางตัวละครเอนตัวเข้ามาใกล้กล้องอย่างขี้เล่น เห็นเต็มตัวทุกคน องค์ประกอบทั้งหมดควรดูเหมือนเป็นเซลฟี่จริง ๆ ที่ทุกคนพยายามเบียดให้พอดีในเฟรม พร้อมฉากในเมือง แสงเป็นแสงธรรมชาติกลางวันคุณภาพแบบภาพยนตร์ โทนสีผิวเป็นธรรมชาติ สีสดใสสมจริง รายละเอียดคมชัดสูงสุด สไตล์โฟโตเรียลลิสติก`;
 
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
@@ -65,6 +66,9 @@ const PromptControls: React.FC<PromptControlsProps> = ({
           </button>
           <button onClick={() => setPrompt(figure3dPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
             ตัวช่วย Prompt: รูป figure 3d
+          </button>
+          <button onClick={() => setPrompt(selfiePrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            ตัวช่วย Prompt: กลุ่มเซลฟี่
           </button>
           <button 
             onClick={onRandomPrompt} 
