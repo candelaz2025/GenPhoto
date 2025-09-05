@@ -42,3 +42,31 @@ export const ShareIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.195.025.39.05.585.077m-1.542 2.034a2.25 2.25 0 0 1-.585.077m1.058-2.111a2.25 2.25 0 0 0 2.134 4.34m2.134-4.34a2.25 2.25 0 0 1 .632 4.283m0-4.283a2.25 2.25 0 0 0-2.134-4.34m2.134 4.34c-.195-.025-.39-.05-.585-.077m1.542-2.034a2.25 2.25 0 0 0 .585-.077m-1.058 2.111a2.25 2.25 0 0 1-2.134 4.34m-2.134-4.34a2.25 2.25 0 0 0-.632-4.283" />
     </svg>
 );
+
+export const MagicWandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12.364 3.636a1.5 1.5 0 0 0-2.122 0l-7.07 7.07a1.5 1.5 0 0 0 2.121 2.122L12 6.12l6.707 6.708a1.5 1.5 0 0 0 2.122-2.122l-7.07-7.07zM12 6.12V21" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 10.5h-1.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 10.5H3.75" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 4.5l-1.06-1.06" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.56 4.5l-1.06-1.06" />
+  </svg>
+);
+
+export const ZoomInIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z M10.5 7.5v6m3-3h-6" />
+    </svg>
+);
+
+export const ZoomOutIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z M13.5 10.5h-6" />
+    </svg>
+);
+
+export const ResetZoomIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" />
+    </svg>
+);

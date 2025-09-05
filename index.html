@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>โปรมแกรมสร้างรูปภาพและ วิดีโอฟรี</title>
+    <title>โปรแกรมแก้ไขรูปภาพ Gemini</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -20,13 +20,13 @@
               'content': '#d1d5db',
             },
             keyframes: {
-              flash: {
-                '0%, 100%': { opacity: 0, transform: 'scale(0.5)' },
-                '50%': { opacity: 0.2, transform: 'scale(1.2)' },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
               }
             },
             animation: {
-              flash: 'flash 0.7s ease-in-out infinite',
+              'fade-in': 'fadeIn 0.3s ease-out',
             }
           }
         }

@@ -1,17 +1,19 @@
 // Fix: Provide the implementation for the PromptControls component.
 import React from 'react';
-import { SparklesIcon, VideoIcon } from './IconComponents';
-import { AspectRatio } from '../types';
+import { SparklesIcon, MagicWandIcon } from './IconComponents';
+import { AspectRatio, ArtisticStyle } from '../types';
 
 interface PromptControlsProps {
   prompt: string;
   setPrompt: (prompt: string) => void;
   aspectRatio: AspectRatio;
   setAspectRatio: (ratio: AspectRatio) => void;
+  style: ArtisticStyle;
+  setStyle: (style: ArtisticStyle) => void;
   onSubmit: () => void;
-  onVideoSubmit: () => void;
+  onRandomPrompt: () => void;
   isLoading: boolean;
-  isVideoButtonDisabled: boolean;
+  isApiConfigured: boolean;
 }
 
 const balloonPrompt = `Using the reference face, generate a Pixar-style 3D balloon caricature with ultra-detailed sculpted skin, glossy shine, oversized cheeks, and a balloon knot at the bottom with a balloon string extending downward, while preserving the exact hairstyle and facial proportions from the reference. Maintain the closed-eye kissing expression with cinematic DOF and polished surreal toy-like aesthetics, using the same background and lighting as in the reference image.`;
@@ -27,11 +29,13 @@ Shot as if captured with a professional full-frame DSLR camera, using a 50mm len
 Studio-quality clarity, extremely sharp details, perfect color grading.`;
 
 
-const PromptControls: React.FC<PromptControlsProps> = ({ prompt, setPrompt, aspectRatio, setAspectRatio, onSubmit, onVideoSubmit, isLoading, isVideoButtonDisabled }) => {
+const PromptControls: React.FC<PromptControlsProps> = ({ 
+    prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, onSubmit, onRandomPrompt, isLoading, isApiConfigured 
+}) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!isLoading) {
+      if (!isLoading && isApiConfigured) {
         onSubmit();
       }
     }
@@ -43,6 +47,16 @@ const PromptControls: React.FC<PromptControlsProps> = ({ prompt, setPrompt, aspe
     { label: 'แนวตั้ง', value: '9:16' },
   ];
 
+  const artisticStyles: { label: string; value: ArtisticStyle }[] = [
+    { label: 'ค่าเริ่มต้น', value: 'Default' },
+    { label: 'สมจริง', value: 'Photorealistic' },
+    { label: 'อนิเมะ', value: 'Anime' },
+    { label: 'อิมเพรสชันนิสม์', value: 'Impressionist' },
+    { label: 'การ์ตูน', value: 'Cartoon' },
+  ];
+
+  const commonButtonDisabled = isLoading || !isApiConfigured;
+
   return (
     <div className="w-full flex flex-col space-y-4">
       <div className="flex flex-wrap gap-2 justify-center">
@@ -52,23 +66,52 @@ const PromptControls: React.FC<PromptControlsProps> = ({ prompt, setPrompt, aspe
           <button onClick={() => setPrompt(figure3dPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
             ตัวช่วย Prompt: รูป figure 3d
           </button>
+          <button 
+            onClick={onRandomPrompt} 
+            disabled={commonButtonDisabled}
+            className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors flex items-center gap-1.5 disabled:bg-base-200 disabled:text-gray-500 disabled:cursor-not-allowed"
+            title={!isApiConfigured ? 'กรุณาใส่ API Key' : 'สุ่มคำสั่งสำหรับแก้ไขรูปภาพ'}
+          >
+            <MagicWandIcon className="w-4 h-4" />
+            สุ่มคำสั่ง
+          </button>
       </div>
+      
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+        <div className="flex flex-col gap-3 items-center">
+          <label className="font-semibold text-content">สไตล์ภาพ</label>
+          <div className="flex flex-wrap gap-2 p-1 bg-base-200 rounded-lg justify-center">
+            {artisticStyles.map(({ label, value }) => (
+              <button
+                key={value}
+                onClick={() => setStyle(value)}
+                disabled={isLoading}
+                className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                  style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-3 items-center">
-        <label className="font-semibold text-content">อัตราส่วนภาพ</label>
-        <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
-          {aspectRatios.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setAspectRatio(value)}
-              disabled={isLoading}
-              className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-              }`}
-            >
-              {label} ({value})
-            </button>
-          ))}
+        <div className="flex flex-col gap-3 items-center">
+          <label className="font-semibold text-content">อัตราส่วนภาพ</label>
+          <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+            {aspectRatios.map(({ label, value }) => (
+              <button
+                key={value}
+                onClick={() => setAspectRatio(value)}
+                disabled={isLoading}
+                className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                  aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                }`}
+              >
+                {label} ({value})
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -79,25 +122,21 @@ const PromptControls: React.FC<PromptControlsProps> = ({ prompt, setPrompt, aspe
         placeholder="เพิ่มคำอธิบาย เช่น 'เพิ่มหมวกวันเกิดให้แมว' หรือปล่อยว่างไว้เพื่อให้ AI สร้างสรรค์..."
         className="w-full p-4 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
         rows={3}
-        disabled={isLoading}
+        disabled={commonButtonDisabled}
       />
+      {!isApiConfigured && (
+          <p className="text-center text-yellow-400 text-sm -mt-2">
+              กรุณาใส่ API Key ของคุณในช่องด้านบนเพื่อเปิดใช้งาน
+          </p>
+      )}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <button
             onClick={onSubmit}
-            disabled={isLoading}
+            disabled={commonButtonDisabled}
             className="w-full sm:w-auto px-8 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors disabled:bg-base-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg hover:shadow-brand-secondary/50"
         >
             <SparklesIcon className="w-6 h-6" />
             <span>{isLoading ? 'กำลังประมวลผล...' : 'สร้างรูปภาพ'}</span>
-        </button>
-        <button
-            onClick={onVideoSubmit}
-            disabled={isLoading || isVideoButtonDisabled}
-            className="w-full sm:w-auto px-8 py-3 bg-brand-secondary text-white font-bold rounded-lg hover:bg-brand-light transition-colors disabled:bg-base-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg hover:shadow-brand-light/50"
-            title={isVideoButtonDisabled ? 'ต้องมีรูปภาพอ้างอิงอย่างน้อย 1 ภาพ' : ''}
-        >
-            <VideoIcon className="w-6 h-6" />
-            <span>{isLoading ? 'กำลังประมวลผล...' : 'สร้างวิดีโอ'}</span>
         </button>
       </div>
     </div>

@@ -3,14 +3,15 @@
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
 import { UploadedImage, Result, AspectRatio } from '../types';
 
-// Fix: Correctly initialize GoogleGenAI with a named apiKey parameter from environment variables.
-const ai = new GoogleGenAI({apiKey: process.env.API_KEY as string});
-
 export const editImageWithGemini = async (
   prompt: string,
   images: UploadedImage[],
   aspectRatio: AspectRatio,
+  apiKey: string
 ): Promise<Result> => {
+  if (!apiKey) throw new Error('API Key is required.');
+  const ai = new GoogleGenAI({ apiKey });
+
   if (!prompt && images.length === 0) {
     throw new Error('Please provide a prompt or at least one image.');
   }
@@ -86,55 +87,114 @@ export const editImageWithGemini = async (
   }
 };
 
-
-export const generateVideoWithGemini = async (
+export const generateImageWithImagen = async (
   prompt: string,
-  images: UploadedImage[]
+  aspectRatio: AspectRatio,
+  apiKey: string
 ): Promise<Result> => {
-  if (images.length === 0) {
-    throw new Error('Video generation requires at least one reference image.');
+  if (!apiKey) throw new Error('API Key is required.');
+  const ai = new GoogleGenAI({ apiKey });
+
+  if (!prompt) {
+    throw new Error('Please provide a prompt.');
   }
 
-  const referenceImage = images[0];
+  const model = 'imagen-4.0-generate-001';
 
   try {
-    let operation = await ai.models.generateVideos({
-      model: 'veo-2.0-generate-001',
+    const response = await ai.models.generateImages({
+      model: model,
       prompt: prompt,
-      image: {
-        imageBytes: referenceImage.base64,
-        mimeType: referenceImage.mimeType,
-      },
       config: {
-        numberOfVideos: 1
-      }
+        numberOfImages: 1,
+        outputMimeType: 'image/jpeg',
+        aspectRatio: aspectRatio,
+      },
     });
 
-    while (!operation.done) {
-      await new Promise(resolve => setTimeout(resolve, 10000));
-      operation = await ai.operations.getVideosOperation({ operation: operation });
-    }
-    
-    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-
-    if (downloadLink) {
-        // As per docs, we need to fetch the video bytes from the URI with the API key
-        const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-        if (!videoResponse.ok) {
-            throw new Error(`Failed to download the generated video. Status: ${videoResponse.statusText}`);
-        }
-        const videoBlob = await videoResponse.blob();
-        const videoUrl = URL.createObjectURL(videoBlob);
-        return { videoUrl };
+    if (!response.generatedImages || response.generatedImages.length === 0) {
+      throw new Error('The API returned no images. Please try a different prompt.');
     }
 
-    throw new Error('Video generation did not return a valid link.');
+    const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+    const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
 
+    const finalResult: Result = {
+      image: imageUrl,
+    };
+
+    return finalResult;
   } catch (error) {
-    console.error('Error calling Gemini Video API:', error);
+    console.error('Error calling Imagen API:', error);
     if (error instanceof Error) {
-        throw new Error(`Failed to generate video: ${error.message}`);
+      throw new Error(`Failed to generate image: ${error.message}`);
     }
-    throw new Error('An unknown error occurred while calling the Gemini Video API.');
+    throw new Error('An unknown error occurred while calling the Imagen API.');
   }
+};
+
+
+export const generatePromptFromImages = async (
+  images: UploadedImage[],
+  apiKey: string
+): Promise<string> => {
+  if (!apiKey) throw new Error('API Key is required.');
+  if (images.length === 0) {
+    throw new Error('At least one image is required to generate a prompt.');
+  }
+  const ai = new GoogleGenAI({ apiKey });
+  const model = 'gemini-2.5-flash';
+
+  const parts: Part[] = images.map(image => ({
+    inlineData: {
+      data: image.base64,
+      mimeType: image.mimeType,
+    },
+  }));
+  
+  parts.push({ text: "วิเคราะห์รูปภาพเหล่านี้และช่วยสร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขหรือต่อยอดรูปภาพนี้เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ" });
+
+  try {
+    const result = await ai.models.generateContent({
+      model: model,
+      contents: { parts: parts },
+    });
+    const text = result.text;
+    if (!text) {
+      throw new Error('AI did not return a prompt.');
+    }
+    return text.trim();
+  } catch (error) {
+    console.error('Error generating prompt from images:', error);
+    if (error instanceof Error) {
+        throw new Error(`Failed to generate prompt: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while generating the prompt.');
+  }
+};
+
+export const generateRandomCreativePrompt = async (apiKey: string): Promise<string> => {
+    if (!apiKey) throw new Error('API Key is required.');
+    const ai = new GoogleGenAI({ apiKey });
+    const model = 'gemini-2.5-flash';
+
+    const prompt = "สร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขรูปภาพด้วย AI เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ ไม่ต้องอิงจากรูปภาพใดๆ แค่เป็นไอเดียเจ๋งๆ สั้นๆ กระชับ";
+
+    try {
+        const result = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+        });
+        const text = result.text;
+        if (!text) {
+            throw new Error('AI did not return a prompt.');
+        }
+        return text.trim();
+    } catch (error) {
+        console.error('Error generating random prompt:', error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to generate prompt: ${error.message}`);
+        }
+        throw new Error('An unknown error occurred while generating the prompt.');
+    }
 };

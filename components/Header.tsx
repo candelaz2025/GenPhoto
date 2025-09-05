@@ -7,7 +7,7 @@ const Header: React.FC = () => {
         <div className="flex items-center space-x-3">
           <span className="text-3xl" role="img" aria-label="paint palette">🎨</span>
           <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-secondary">
-            โปรมแกรมสร้างรูปภาพและ วิดีโอฟรี
+            โปรแกรมแก้ไขรูปภาพ Gemini
           </h1>
         </div>
       </div>

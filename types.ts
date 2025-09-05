@@ -20,3 +20,5 @@ export interface HistoryItem {
 }
 
 export type AspectRatio = '1:1' | '16:9' | '9:16';
+
+export type ArtisticStyle = 'Default' | 'Photorealistic' | 'Anime' | 'Impressionist' | 'Cartoon';
