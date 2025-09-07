@@ -131,28 +131,25 @@ function App() {
     setError(null);
     setResult(null);
 
-    let finalPrompt = prompt;
-    if (style !== 'Default') {
-        const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
-        if (prompt) {
-            finalPrompt = prompt + styleInstruction;
-        } else if (images.length > 0) {
-            finalPrompt = `สร้างสรรค์ภาพที่อัปโหลดขึ้นมาใหม่ในสไตล์ ${style}`;
-        }
-    }
-
     try {
-      const apiResult =
-        images.length > 0
-          ? await editImageWithGemini(
-              finalPrompt,
-              images,
-              aspectRatio,
-              apiKey
-            )
-          : await generateImageWithImagen(finalPrompt, aspectRatio, apiKey);
-
-      setResult(apiResult);
+      if (images.length > 0) {
+        const apiResult = await editImageWithGemini(
+          prompt,
+          images,
+          aspectRatio,
+          style,
+          apiKey
+        );
+        setResult(apiResult);
+      } else {
+        let finalPrompt = prompt;
+        if (style !== 'Default') {
+          const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
+          finalPrompt = prompt + styleInstruction;
+        }
+        const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey);
+        setResult(apiResult);
+      }
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่คาดคิด');

@@ -1,11 +1,12 @@
 // Fix: Provide the implementation for the PromptControls component.
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, MagicWandIcon } from './IconComponents';
 import { AspectRatio, ArtisticStyle } from '../types';
 
 interface PromptControlsProps {
   prompt: string;
-  setPrompt: (prompt: string) => void;
+  // FIX: Updated the type of `setPrompt` to allow functional updates.
+  setPrompt: React.Dispatch<React.SetStateAction<string>>;
   aspectRatio: AspectRatio;
   setAspectRatio: (ratio: AspectRatio) => void;
   style: ArtisticStyle;
@@ -33,6 +34,80 @@ const selfiePrompt = `สร้างภาพเซลฟี่กลุ่ม�
 const PromptControls: React.FC<PromptControlsProps> = ({ 
     prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, onSubmit, onRandomPrompt, isLoading, isApiConfigured 
 }) => {
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const promptWrapperRef = useRef<HTMLDivElement>(null);
+  const maxLength = 1000;
+
+  const commonKeywords = [
+    'photorealistic', 'hyperrealistic', 'hyperdetailed', 'cinematic lighting', 
+    'volumetric lighting', '8k resolution', 'masterpiece', 'vibrant colors', 
+    'award-winning', 'epic', 'fantasy', 'sci-fi', 'futuristic', 'steampunk',
+    'surreal', 'abstract', 'minimalist', 'concept art', 'digital painting',
+    'oil painting', 'watercolor', 'character design', 'portrait', 'landscape',
+    'low angle shot', 'dramatic lighting', 'soft lighting', 'studio lighting'
+  ];
+
+  const styleSuggestions: Record<Exclude<ArtisticStyle, 'Default'>, string[]> = {
+    Photorealistic: ['hyperrealistic', 'sharp focus', '8k', 'natural lighting', 'DSLR photo'],
+    Anime: ['Ghibli style', '90s anime aesthetic', 'cel shading', 'makoto shinkai', 'manga'],
+    Impressionist: ['oil on canvas', 'visible brushstrokes', 'Monet style', 'soft palette', 'en plein air'],
+    Cartoon: ['Pixar style', 'Disney animation', 'bold outlines', 'vibrant and saturated', '3D render'],
+    Surreal: ['dreamlike', 'Salvador Dali style', 'abstract', 'bizarre', 'psychedelic'],
+    Cyberpunk: ['neon lighting', 'futuristic city', 'dystopian', 'high-tech low-life', 'Blade Runner aesthetic'],
+    Vintage: ['sepia tone', 'film grain', '1950s photo', 'retro style', 'Polaroid effect'],
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (promptWrapperRef.current && !promptWrapperRef.current.contains(event.target as Node)) {
+            setIsSuggestionsVisible(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setPrompt(value);
+
+    const words = value.split(/[\s,]+/);
+    const currentWord = words[words.length - 1].toLowerCase();
+
+    if (currentWord.length > 1) {
+        let allKeywords = [...commonKeywords];
+        if (style !== 'Default' && styleSuggestions[style as Exclude<ArtisticStyle, 'Default'>]) {
+            allKeywords.push(...styleSuggestions[style as Exclude<ArtisticStyle, 'Default'>]);
+        }
+        const uniqueKeywords = [...new Set(allKeywords)];
+
+        const filteredSuggestions = uniqueKeywords.filter(keyword => 
+            keyword.toLowerCase().startsWith(currentWord) && !value.toLowerCase().includes(keyword.toLowerCase())
+        );
+        setSuggestions(filteredSuggestions.slice(0, 5));
+        setIsSuggestionsVisible(filteredSuggestions.length > 0);
+    } else {
+        setSuggestions([]);
+        setIsSuggestionsVisible(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    const words = prompt.split(' ');
+    words[words.length - 1] = suggestion;
+    setPrompt(words.join(' ') + ' ');
+    setSuggestions([]);
+    setIsSuggestionsVisible(false);
+    promptWrapperRef.current?.querySelector('textarea')?.focus();
+  };
+
+  const handleStyleSuggestionClick = (suggestion: string) => {
+    setPrompt(prev => (prev.trim().length > 0 ? `${prev.trim()}, ${suggestion}` : suggestion));
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -54,6 +129,9 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     { label: 'อนิเมะ', value: 'Anime' },
     { label: 'อิมเพรสชันนิสม์', value: 'Impressionist' },
     { label: 'การ์ตูน', value: 'Cartoon' },
+    { label: 'เหนือจริง', value: 'Surreal' },
+    { label: 'ไซเบอร์พังก์', value: 'Cyberpunk' },
+    { label: 'วินเทจ', value: 'Vintage' },
   ];
 
   const commonButtonDisabled = isLoading || !isApiConfigured;
@@ -118,16 +196,57 @@ const PromptControls: React.FC<PromptControlsProps> = ({
           </div>
         </div>
       </div>
+      
+      {style !== 'Default' && (
+        <div className="flex flex-wrap gap-2 justify-center animate-fade-in">
+            <span className="text-sm self-center text-gray-400 mr-2">คำแนะนำสำหรับสไตล์ {style}:</span>
+            {(styleSuggestions[style as Exclude<ArtisticStyle, 'Default'>] || []).map(suggestion => (
+                <button
+                    key={suggestion}
+                    onClick={() => handleStyleSuggestionClick(suggestion)}
+                    className="px-3 py-1 text-xs bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors"
+                    aria-label={`เพิ่มคำว่า ${suggestion}`}
+                >
+                    + {suggestion}
+                </button>
+            ))}
+        </div>
+      )}
 
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="เพิ่มคำอธิบาย เช่น 'เพิ่มหมวกวันเกิดให้แมว' หรือปล่อยว่างไว้เพื่อให้ AI สร้างสรรค์..."
-        className="w-full p-4 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
-        rows={3}
-        disabled={commonButtonDisabled}
-      />
+      <div ref={promptWrapperRef} className="relative w-full">
+        {isSuggestionsVisible && suggestions.length > 0 && (
+            <div className="absolute z-10 w-full bottom-full mb-1 bg-base-300 border border-base-100 rounded-lg shadow-lg animate-fade-in">
+                <ul className="py-1 max-h-48 overflow-y-auto" role="listbox">
+                    {suggestions.map((suggestion, index) => (
+                        <li
+                            key={index}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="px-4 py-2 text-sm text-content hover:bg-brand-primary/30 cursor-pointer"
+                            role="option"
+                            aria-selected="false"
+                        >
+                            {suggestion}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+        <textarea
+          value={prompt}
+          onChange={handlePromptChange}
+          onFocus={handlePromptChange}
+          onKeyDown={handleKeyDown}
+          placeholder="เพิ่มคำอธิบาย เช่น 'เพิ่มหมวกวันเกิดให้แมว' หรือปล่อยว่างไว้เพื่อให้ AI สร้างสรรค์..."
+          className="w-full p-4 pb-6 pr-20 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
+          rows={3}
+          disabled={commonButtonDisabled}
+          maxLength={maxLength}
+        />
+        <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
+          {prompt.length} / {maxLength}
+        </div>
+      </div>
+
       {!isApiConfigured && (
           <p className="text-center text-yellow-400 text-sm -mt-2">
               กรุณาใส่ API Key ของคุณในช่องด้านบนเพื่อเปิดใช้งาน

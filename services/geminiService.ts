@@ -1,12 +1,13 @@
 // Fix: Provide the implementation for the Gemini API service.
 // Fix: Replaced non-existent 'ContentPart' type with the correct 'Part' type.
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
-import { UploadedImage, Result, AspectRatio } from '../types';
+import { UploadedImage, Result, AspectRatio, ArtisticStyle } from '../types';
 
 export const editImageWithGemini = async (
   prompt: string,
   images: UploadedImage[],
   aspectRatio: AspectRatio,
+  style: ArtisticStyle,
   apiKey: string
 ): Promise<Result> => {
   if (!apiKey) throw new Error('API Key is required.');
@@ -31,10 +32,20 @@ export const editImageWithGemini = async (
     });
   }
 
-  // Add aspect ratio instruction to the prompt
-  const fullPrompt = `${prompt}\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`;
+  let finalPrompt = prompt;
+  if (style !== 'Default') {
+    const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
+    if (prompt) {
+      finalPrompt += styleInstruction;
+    } else {
+      finalPrompt = `สร้างสรรค์ภาพที่อัปโหลดขึ้นมาใหม่ในสไตล์ ${style}`;
+    }
+  }
 
-  if (fullPrompt) {
+  // Add aspect ratio instruction to the prompt
+  const fullPrompt = `${finalPrompt}\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`;
+
+  if (fullPrompt.trim()) {
     parts.push({ text: fullPrompt });
   }
 
