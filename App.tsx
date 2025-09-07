@@ -10,7 +10,7 @@ import ResultDisplay from './components/ResultDisplay';
 import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
 import ApiKeyModal from './components/ApiKeyModal'; // Import the new modal
-import { editImageWithGemini, generateImageWithImagen, generatePromptFromImages, generateRandomCreativePrompt } from './services/geminiService';
+import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, generatePromptFromImages, generateRandomCreativePrompt } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle } from './types';
 
 // Helper function to convert file to base64
@@ -33,9 +33,11 @@ function App() {
   const [style, setStyle] = useState<ArtisticStyle>('Default');
   const [result, setResult] = useState<Result | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [loadingMode, setLoadingMode] = useState<'image' | null>(null);
+  const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false); // State for the modal
+  const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
+
 
   // Load API key from local storage on mount, or use the default
   useEffect(() => {
@@ -127,29 +129,34 @@ function App() {
       setError('กรุณาใส่คำอธิบายหรืออัปโหลดรูปภาพอย่างน้อยหนึ่งภาพ');
       return;
     }
-    setLoadingMode('image');
+    setLoadingMode(generationMode);
     setError(null);
     setResult(null);
 
     try {
-      if (images.length > 0) {
-        const apiResult = await editImageWithGemini(
-          prompt,
-          images,
-          aspectRatio,
-          style,
-          apiKey
-        );
-        setResult(apiResult);
-      } else {
-        let finalPrompt = prompt;
-        if (style !== 'Default') {
-          const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
-          finalPrompt = prompt + styleInstruction;
+        if (generationMode === 'video') {
+            const apiResult = await generateVideoWithVeo(prompt, images, apiKey);
+            setResult(apiResult);
+        } else {
+            if (images.length > 0) {
+                const apiResult = await editImageWithGemini(
+                    prompt,
+                    images,
+                    aspectRatio,
+                    style,
+                    apiKey
+                );
+                setResult(apiResult);
+            } else {
+                let finalPrompt = prompt;
+                if (style !== 'Default') {
+                    const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
+                    finalPrompt = prompt + styleInstruction;
+                }
+                const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey);
+                setResult(apiResult);
+            }
         }
-        const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey);
-        setResult(apiResult);
-      }
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่คาดคิด');
@@ -279,6 +286,8 @@ function App() {
             setAspectRatio={setAspectRatio}
             style={style}
             setStyle={setStyle}
+            generationMode={generationMode}
+            setGenerationMode={setGenerationMode}
             onSubmit={handleSubmit}
             onRandomPrompt={handleRandomPrompt}
             isLoading={!!loadingMode}

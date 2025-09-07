@@ -173,6 +173,58 @@ export const generateImageWithImagen = async (
 };
 
 
+export const generateVideoWithVeo = async (
+  prompt: string,
+  images: UploadedImage[],
+  apiKey: string
+): Promise<Result> => {
+    if (!apiKey) throw new Error('API Key is required.');
+    const ai = new GoogleGenAI({ apiKey });
+
+    if (!prompt) {
+        throw new Error('Please provide a prompt for video generation.');
+    }
+
+    const model = 'veo-2.0-generate-001';
+    
+    try {
+        let operation = await ai.models.generateVideos({
+            model: model,
+            prompt: prompt,
+            // Use the first image as an input if available
+            image: images.length > 0 ? {
+                imageBytes: images[0].base64,
+                mimeType: images[0].mimeType,
+            } : undefined,
+            config: {
+                numberOfVideos: 1,
+            },
+        });
+
+        // Poll for the result
+        while (!operation.done) {
+            // Wait for 10 seconds before checking the status again
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            operation = await ai.operations.getVideosOperation({ operation: operation });
+        }
+
+        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+
+        if (!downloadLink) {
+            throw new Error('Video generation finished, but no download link was found.');
+        }
+        
+        // The download link requires the API key to be appended for access
+        const finalUrl = `${downloadLink}&key=${apiKey}`;
+
+        return { videoUrl: finalUrl };
+
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+};
+
+
 export const generatePromptFromImages = async (
   images: UploadedImage[],
   apiKey: string

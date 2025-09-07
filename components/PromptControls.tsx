@@ -1,6 +1,6 @@
 // Fix: Provide the implementation for the PromptControls component.
 import React, { useState, useEffect, useRef } from 'react';
-import { SparklesIcon, MagicWandIcon } from './IconComponents';
+import { SparklesIcon, MagicWandIcon, VideoIcon } from './IconComponents';
 import { AspectRatio, ArtisticStyle } from '../types';
 
 interface PromptControlsProps {
@@ -11,6 +11,8 @@ interface PromptControlsProps {
   setAspectRatio: (ratio: AspectRatio) => void;
   style: ArtisticStyle;
   setStyle: (style: ArtisticStyle) => void;
+  generationMode: 'image' | 'video';
+  setGenerationMode: (mode: 'image' | 'video') => void;
   onSubmit: () => void;
   onRandomPrompt: () => void;
   isLoading: boolean;
@@ -32,7 +34,7 @@ const selfiePrompt = `สร้างภาพเซลฟี่กลุ่ม�
 
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
-    prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, onSubmit, onRandomPrompt, isLoading, isApiConfigured 
+    prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, onSubmit, onRandomPrompt, isLoading, isApiConfigured 
 }) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
@@ -56,6 +58,9 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     Surreal: ['dreamlike', 'Salvador Dali style', 'abstract', 'bizarre', 'psychedelic'],
     Cyberpunk: ['neon lighting', 'futuristic city', 'dystopian', 'high-tech low-life', 'Blade Runner aesthetic'],
     Vintage: ['sepia tone', 'film grain', '1950s photo', 'retro style', 'Polaroid effect'],
+    Fantasy: ['epic', 'mythical', 'enchanted', 'magical lighting', 'dragon'],
+    'Sci-Fi': ['futuristic', 'spaceship', 'aliens', 'cybernetic', 'neon city'],
+    Abstract: ['geometric', 'non-representational', 'bold colors', 'textured', 'chaotic patterns'],
   };
 
   useEffect(() => {
@@ -127,6 +132,9 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     { label: 'ค่าเริ่มต้น', value: 'Default' },
     { label: 'สมจริง', value: 'Photorealistic' },
     { label: 'อนิเมะ', value: 'Anime' },
+    { label: 'แฟนตาซี', value: 'Fantasy' },
+    { label: 'ไซไฟ', value: 'Sci-Fi' },
+    { label: 'นามธรรม', value: 'Abstract' },
     { label: 'อิมเพรสชันนิสม์', value: 'Impressionist' },
     { label: 'การ์ตูน', value: 'Cartoon' },
     { label: 'เหนือจริง', value: 'Surreal' },
@@ -139,65 +147,97 @@ const PromptControls: React.FC<PromptControlsProps> = ({
   return (
     <div className="w-full flex flex-col space-y-4">
       <div className="flex flex-wrap gap-2 justify-center">
-          <button onClick={() => setPrompt(balloonPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-            ตัวช่วย Prompt: รูปบอลลูน
-          </button>
-          <button onClick={() => setPrompt(figure3dPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-            ตัวช่วย Prompt: รูป figure 3d
-          </button>
-          <button onClick={() => setPrompt(selfiePrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-            ตัวช่วย Prompt: กลุ่มเซลฟี่
-          </button>
-          <button 
-            onClick={onRandomPrompt} 
-            disabled={commonButtonDisabled}
-            className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors flex items-center gap-1.5 disabled:bg-base-200 disabled:text-gray-500 disabled:cursor-not-allowed"
-            title={!isApiConfigured ? 'กรุณาใส่ API Key' : 'สุ่มคำสั่งสำหรับแก้ไขรูปภาพ'}
-          >
-            <MagicWandIcon className="w-4 h-4" />
-            สุ่มคำสั่ง
-          </button>
+        {generationMode === 'image' && (
+          <>
+            <button onClick={() => setPrompt(balloonPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors animate-fade-in">
+              ตัวช่วย Prompt: รูปบอลลูน
+            </button>
+            <button onClick={() => setPrompt(figure3dPrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors animate-fade-in">
+              ตัวช่วย Prompt: รูป figure 3d
+            </button>
+            <button onClick={() => setPrompt(selfiePrompt)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors animate-fade-in">
+              ตัวช่วย Prompt: กลุ่มเซลฟี่
+            </button>
+          </>
+        )}
+        <button 
+          onClick={onRandomPrompt} 
+          disabled={commonButtonDisabled}
+          className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors flex items-center gap-1.5 disabled:bg-base-200 disabled:text-gray-500 disabled:cursor-not-allowed"
+          title={!isApiConfigured ? 'กรุณาใส่ API Key' : 'สุ่มคำสั่งสำหรับแก้ไขรูปภาพ'}
+        >
+          <MagicWandIcon className="w-4 h-4" />
+          สุ่มคำสั่ง
+        </button>
       </div>
       
       <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
         <div className="flex flex-col gap-3 items-center">
-          <label className="font-semibold text-content">สไตล์ภาพ</label>
-          <div className="flex flex-wrap gap-2 p-1 bg-base-200 rounded-lg justify-center">
-            {artisticStyles.map(({ label, value }) => (
-              <button
-                key={value}
-                onClick={() => setStyle(value)}
-                disabled={isLoading}
-                className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                  style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+            <label className="font-semibold text-content">โหมด</label>
+            <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                <button
+                    onClick={() => setGenerationMode('image')}
+                    disabled={isLoading}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                    generationMode === 'image' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                >
+                    รูปภาพ
+                </button>
+                <button
+                    onClick={() => setGenerationMode('video')}
+                    disabled={isLoading}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                    generationMode === 'video' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                >
+                    วิดีโอ
+                </button>
+            </div>
         </div>
+        
+        {generationMode === 'image' && (
+          <>
+            <div className="flex flex-col gap-3 items-center animate-fade-in">
+              <label className="font-semibold text-content">สไตล์ภาพ</label>
+              <div className="flex flex-wrap gap-2 p-1 bg-base-200 rounded-lg justify-center">
+                {artisticStyles.map(({ label, value }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStyle(value)}
+                    disabled={isLoading}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                      style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="flex flex-col gap-3 items-center">
-          <label className="font-semibold text-content">อัตราส่วนภาพ</label>
-          <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
-            {aspectRatios.map(({ label, value }) => (
-              <button
-                key={value}
-                onClick={() => setAspectRatio(value)}
-                disabled={isLoading}
-                className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                  aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                }`}
-              >
-                {label} ({value})
-              </button>
-            ))}
-          </div>
-        </div>
+            <div className="flex flex-col gap-3 items-center animate-fade-in">
+              <label className="font-semibold text-content">อัตราส่วนภาพ</label>
+              <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                {aspectRatios.map(({ label, value }) => (
+                  <button
+                    key={value}
+                    onClick={() => setAspectRatio(value)}
+                    disabled={isLoading}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                      aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                  >
+                    {label} ({value})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
       
-      {style !== 'Default' && (
+      {generationMode === 'image' && style !== 'Default' && (
         <div className="flex flex-wrap gap-2 justify-center animate-fade-in">
             <span className="text-sm self-center text-gray-400 mr-2">คำแนะนำสำหรับสไตล์ {style}:</span>
             {(styleSuggestions[style as Exclude<ArtisticStyle, 'Default'>] || []).map(suggestion => (
@@ -236,7 +276,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
           onChange={handlePromptChange}
           onFocus={handlePromptChange}
           onKeyDown={handleKeyDown}
-          placeholder="เพิ่มคำอธิบาย เช่น 'เพิ่มหมวกวันเกิดให้แมว' หรือปล่อยว่างไว้เพื่อให้ AI สร้างสรรค์..."
+          placeholder={generationMode === 'image' ? "เพิ่มคำอธิบาย เช่น 'เพิ่มหมวกวันเกิดให้แมว' หรือปล่อยว่างไว้เพื่อให้ AI สร้างสรรค์..." : "อธิบายวิดีโอที่ต้องการสร้าง เช่น 'แมวอวกาศกำลังขับยานอวกาศ'"}
           className="w-full p-4 pb-6 pr-20 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
           rows={3}
           disabled={commonButtonDisabled}
@@ -258,8 +298,8 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             disabled={commonButtonDisabled}
             className="w-full sm:w-auto px-8 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors disabled:bg-base-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg hover:shadow-brand-secondary/50"
         >
-            <SparklesIcon className="w-6 h-6" />
-            <span>{isLoading ? 'กำลังประมวลผล...' : 'สร้างรูปภาพ'}</span>
+            {generationMode === 'video' ? <VideoIcon className="w-6 h-6" /> : <SparklesIcon className="w-6 h-6" />}
+            <span>{isLoading ? 'กำลังประมวลผล...' : generationMode === 'image' ? 'สร้างรูปภาพ' : 'สร้างวิดีโอ'}</span>
         </button>
       </div>
     </div>
