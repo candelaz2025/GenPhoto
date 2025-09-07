@@ -3,6 +3,42 @@
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
 import { UploadedImage, Result, AspectRatio, ArtisticStyle } from '../types';
 
+/**
+ * Handles API errors by converting them into user-friendly messages.
+ * @param error The error caught from the API call.
+ * @returns A user-friendly error string.
+ */
+const handleApiError = (error: unknown): string => {
+    console.error('API Error:', error); // Log the full error for debugging
+    if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        
+        if (message.includes('api key not valid') || message.includes('invalid api key') || message.includes('api_key_invalid')) {
+            return 'API Key ไม่ถูกต้องหรือไม่ได้รับอนุญาต โปรดตรวจสอบและบันทึกคีย์ของคุณอีกครั้ง';
+        }
+        if (message.includes('rate limit') || message.includes('quota')) {
+            return 'ใช้งานเกินขีดจำกัดแล้ว โปรดรอสักครู่แล้วลองอีกครั้งในภายหลัง';
+        }
+        if (message.includes('failed to fetch')) {
+            return 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ';
+        }
+        if (message.includes('prompt was blocked') || message.includes('safety policy')) {
+            return 'คำสั่งหรือรูปภาพของคุณถูกบล็อกเนื่องจากนโยบายความปลอดภัย โปรดลองใช้คำสั่งอื่น';
+        }
+        if (message.includes('empty response') || message.includes('no content generated')) {
+            return 'AI ไม่ได้ส่งคืนผลลัพธ์ใดๆ โปรดลองปรับเปลี่ยนคำสั่งหรือรูปภาพของคุณ';
+        }
+        if (message.includes('invalid argument')) {
+            return 'มีข้อผิดพลาดกับข้อมูลที่ส่งไป โปรดตรวจสอบคำสั่งและรูปภาพของคุณ';
+        }
+        // Fallback for other known errors from the SDK
+        return `เกิดข้อผิดพลาดจาก API: ${error.message}`;
+    }
+    // Fallback for totally unknown errors
+    return 'เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองอีกครั้งในภายหลัง';
+};
+
+
 export const editImageWithGemini = async (
   prompt: string,
   images: UploadedImage[],
@@ -90,11 +126,7 @@ export const editImageWithGemini = async (
 
     return finalResult;
   } catch (error) {
-    console.error('Error calling Gemini API:', error);
-    if (error instanceof Error) {
-        throw new Error(`Failed to generate content: ${error.message}`);
-    }
-    throw new Error('An unknown error occurred while calling the Gemini API.');
+    throw new Error(handleApiError(error));
   }
 };
 
@@ -136,11 +168,7 @@ export const generateImageWithImagen = async (
 
     return finalResult;
   } catch (error) {
-    console.error('Error calling Imagen API:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to generate image: ${error.message}`);
-    }
-    throw new Error('An unknown error occurred while calling the Imagen API.');
+    throw new Error(handleApiError(error));
   }
 };
 
@@ -176,11 +204,7 @@ export const generatePromptFromImages = async (
     }
     return text.trim();
   } catch (error) {
-    console.error('Error generating prompt from images:', error);
-    if (error instanceof Error) {
-        throw new Error(`Failed to generate prompt: ${error.message}`);
-    }
-    throw new Error('An unknown error occurred while generating the prompt.');
+    throw new Error(handleApiError(error));
   }
 };
 
@@ -202,10 +226,6 @@ export const generateRandomCreativePrompt = async (apiKey: string): Promise<stri
         }
         return text.trim();
     } catch (error) {
-        console.error('Error generating random prompt:', error);
-        if (error instanceof Error) {
-            throw new Error(`Failed to generate prompt: ${error.message}`);
-        }
-        throw new Error('An unknown error occurred while generating the prompt.');
+        throw new Error(handleApiError(error));
     }
 };
