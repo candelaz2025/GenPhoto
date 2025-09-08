@@ -1,18 +1,18 @@
-
 import React, { useRef } from 'react';
 import { UploadIcon } from './IconComponents';
+import { Translation } from '../locales/translations';
 
 interface ImageUploaderProps {
   onFileChange: (files: FileList | null) => void;
   imageCount: number;
+  t: Translation;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onFileChange, imageCount }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onFileChange, imageCount, t }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     onFileChange(event.target.files);
-    // Reset file input to allow re-uploading the same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -40,7 +40,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onFileChange, imageCount 
             className="mt-4 px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition-colors disabled:bg-base-300 disabled:cursor-not-allowed flex items-center space-x-2"
         >
             <UploadIcon className="w-5 h-5" />
-            <span>เพิ่มรูปภาพ ({imageCount}/10)</span>
+            <span>{t.addImage(imageCount)}</span>
         </button>
          <input
             type="file"
@@ -72,9 +72,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onFileChange, imageCount 
       />
       <div className="flex flex-col items-center justify-center space-y-4 text-gray-400">
         <UploadIcon className="w-12 h-12" />
-        <h2 className="text-xl font-semibold text-content">ลากและวางรูปภาพที่นี่</h2>
-        <p>หรือคลิกเพื่อเลือกไฟล์</p>
-        <p className="text-sm">(สูงสุด 10 ภาพ, PNG, JPG, WEBP)</p>
+        <h2 className="text-xl font-semibold text-content">{t.uploaderTitle}</h2>
+        <p>{t.uploaderSubtitle}</p>
+        <p className="text-sm">{t.uploaderLimit}</p>
       </div>
     </div>
   );

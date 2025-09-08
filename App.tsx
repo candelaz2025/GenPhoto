@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidvv4 } from 'uuid';
 
@@ -11,9 +10,10 @@ import ResultDisplay from './components/ResultDisplay';
 import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
 import ApiKeyModal from './components/ApiKeyModal';
-import PromptExamplesModal from './components/PromptExamplesModal'; // Import the new modal
-import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, generatePromptFromImages } from './services/geminiService';
-import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle } from './types';
+import PromptExamplesModal from './components/PromptExamplesModal';
+import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo } from './services/geminiService';
+import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language } from './types';
+import { translations } from './locales/translations';
 
 // Helper function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> =>
@@ -24,6 +24,7 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
+const DEFAULT_API_KEY = 'P2AMML5VGC4XQVYASFHA73CFAU';
 
 function App() {
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -31,6 +32,9 @@ function App() {
   const [apiKey, setApiKey] = useState<string>('');
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [language, setLanguage] = useState<Language>(
+    () => (localStorage.getItem('app-language') as Language) || 'th'
+  );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
     () => (localStorage.getItem('gemini-aspect-ratio') as AspectRatio) || '1:1'
   );
@@ -42,56 +46,58 @@ function App() {
   const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false); // State for the examples modal
+  const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
+  const t = translations[language];
 
-  // Load API key from local storage on mount, or use the default
+  // Load API key from local storage on mount, with a default fallback
   useEffect(() => {
     const savedApiKey = localStorage.getItem('gemini-api-key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setApiKeyInput(savedApiKey);
-    } else if (process.env.API_KEY) {
-      setApiKey(process.env.API_KEY);
-      setApiKeyInput(process.env.API_KEY);
-    }
+    const keyToUse = savedApiKey || DEFAULT_API_KEY;
+    setApiKey(keyToUse);
+    setApiKeyInput(keyToUse);
   }, []);
 
-  // Save API key to local storage when it changes
+  // Update HTML lang attribute when language changes
   useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('gemini-api-key', apiKey);
-    } else {
-      localStorage.removeItem('gemini-api-key');
+    document.documentElement.lang = language;
+  }, [language]);
+
+  // Save preferences to local storage
+  useEffect(() => {
+    // Avoid saving the default key unless user explicitly saves it
+    const savedApiKey = localStorage.getItem('gemini-api-key');
+    if (apiKey !== DEFAULT_API_KEY || savedApiKey) {
+        if (apiKey) localStorage.setItem('gemini-api-key', apiKey);
+        else localStorage.removeItem('gemini-api-key');
     }
   }, [apiKey]);
   
-  // Save aspect ratio preference to local storage
   useEffect(() => {
     localStorage.setItem('gemini-aspect-ratio', aspectRatio);
   }, [aspectRatio]);
 
-  // Save style preference to local storage
   useEffect(() => {
     localStorage.setItem('gemini-style', style);
   }, [style]);
 
+  useEffect(() => {
+    localStorage.setItem('app-language', language);
+  }, [language]);
 
-  // Load history from local storage on mount
+
+  // Load/Save history from/to local storage
   useEffect(() => {
     try {
       const savedHistory = localStorage.getItem('gemini-image-editor-history');
-      if (savedHistory) {
-        setHistory(JSON.parse(savedHistory));
-      }
+      if (savedHistory) setHistory(JSON.parse(savedHistory));
     } catch (e) {
       console.error("Failed to load history from localStorage", e);
     }
   }, []);
 
-  // Save history to local storage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem('gemini-image-editor-history', JSON.stringify(history));
@@ -111,7 +117,6 @@ function App() {
             }
         } catch (err) {
             console.error("Failed to fetch visitor count:", err);
-            // Fail silently and don't show the counter
         }
     };
     fetchVisitorCount();
@@ -135,16 +140,13 @@ function App() {
             try {
                 const base64 = await fileToBase64(file);
                 newImages.push({
-                    // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
-                    id: uuidvv4(),
-                    file,
+                    id: uuidvv4(), file, base64,
                     previewUrl: URL.createObjectURL(file),
-                    base64,
                     mimeType: file.type,
                 });
             } catch (err) {
                 console.error("Error converting file to base64", err);
-                setError("เกิดข้อผิดพลาดในการประมวลผลไฟล์ภาพ");
+                setError(t.error.fileProcessing);
             }
         }
     }
@@ -155,25 +157,18 @@ function App() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
   
-  /**
-   * Centralized error handler for API calls. It logs the full error
-   * and sets a user-friendly error message in the state.
-   * @param err The error caught from the API call.
-   * @param defaultMessage A fallback message if the error is not a standard Error instance.
-   */
-  const handleError = (err: unknown, defaultMessage: string) => {
+  const handleError = (err: unknown) => {
     console.error(err);
-    // The service layer ensures a user-friendly message is in `err.message`.
-    setError(err instanceof Error ? err.message : defaultMessage);
+    setError(err instanceof Error ? err.message : t.error.default);
   };
 
   const handleSubmit = async () => {
     if (!apiKey) {
-      setError('กรุณาใส่ API Key ของคุณก่อนใช้งาน');
+      setError(t.error.apiKey);
       return;
     }
     if (!prompt && images.length === 0) {
-      setError('กรุณาใส่คำอธิบายหรืออัปโหลดรูปภาพอย่างน้อยหนึ่งภาพ');
+      setError(t.error.promptOrImage);
       return;
     }
     setLoadingMode(generationMode);
@@ -182,30 +177,25 @@ function App() {
 
     try {
         if (generationMode === 'video') {
-            const apiResult = await generateVideoWithVeo(prompt, images, apiKey);
+            const apiResult = await generateVideoWithVeo(prompt, images, apiKey, language);
             setResult(apiResult);
         } else {
             if (images.length > 0) {
                 const apiResult = await editImageWithGemini(
-                    prompt,
-                    images,
-                    aspectRatio,
-                    style,
-                    apiKey
+                    prompt, images, aspectRatio, style, apiKey, language
                 );
                 setResult(apiResult);
             } else {
                 let finalPrompt = prompt;
                 if (style !== 'Default') {
-                    const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
-                    finalPrompt = prompt + styleInstruction;
+                    finalPrompt = prompt + t.service.styleInstruction(t.artisticStyles[style]);
                 }
-                const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey);
+                const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey, language);
                 setResult(apiResult);
             }
         }
     } catch (err) {
-      handleError(err, 'เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      handleError(err);
     } finally {
       setLoadingMode(null);
     }
@@ -214,10 +204,7 @@ function App() {
   const handleAddToHistory = (res: Result) => {
     if (res.image && !history.some(item => item.imageUrl === res.image)) {
         const newHistoryItem: HistoryItem = {
-            // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
-            id: uuidvv4(),
-            imageUrl: res.image,
-            text: res.text,
+            id: uuidvv4(), imageUrl: res.image, text: res.text,
         };
         setHistory(prev => [newHistoryItem, ...prev]);
     }
@@ -229,7 +216,7 @@ function App() {
 
   const handleReuseFromHistory = async (imageUrl: string) => {
     if (images.length >= 10) {
-        setError("คุณสามารถอัปโหลดได้สูงสุด 10 ภาพ");
+        setError(t.error.maxImages);
         return;
     }
     try {
@@ -239,19 +226,14 @@ function App() {
         
         const base64 = await fileToBase64(file);
         const newImage: UploadedImage = {
-            // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
-            id: uuidvv4(),
-            file,
+            id: uuidvv4(), file, base64,
             previewUrl: URL.createObjectURL(file),
-            base64,
             mimeType: file.type,
         };
-
         setImages(prev => [...prev, newImage]);
-
     } catch(err) {
         console.error("Error reusing image from history", err);
-        setError("ไม่สามารถนำรูปภาพจากประวัติกลับมาใช้ใหม่ได้");
+        setError(t.error.historyReuse);
     }
   }
 
@@ -262,18 +244,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-base-100 text-content font-sans">
-      {loadingMode && <Loader mode={loadingMode} />}
-      <ApiKeyModal isOpen={isApiKeyModalOpen} onClose={() => setIsApiKeyModalOpen(false)} />
+      {loadingMode && <Loader mode={loadingMode} t={t} />}
+      <ApiKeyModal isOpen={isApiKeyModalOpen} onClose={() => setIsApiKeyModalOpen(false)} t={t} />
       <PromptExamplesModal 
         isOpen={isExamplesModalOpen} 
         onClose={() => setIsExamplesModalOpen(false)}
         onSelectPrompt={handleSelectPrompt}
+        t={t}
       />
-      <Header />
+      <Header t={t} language={language} setLanguage={setLanguage} />
       <main className="container mx-auto p-4 space-y-8">
         <div className="max-w-xl mx-auto p-4 bg-base-200/50 rounded-lg">
           <label htmlFor="api-key-input" className="block font-semibold mb-2 text-center">
-            Google AI API Key
+            {t.apiKeyLabel}
           </label>
           <div className="flex gap-2">
             <input
@@ -281,43 +264,43 @@ function App() {
               type="password"
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="ใส่ API Key ของคุณที่นี่..."
+              placeholder={t.apiKeyPlaceholder}
               className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
              <button 
                 onClick={handleSaveApiKey}
                 className="px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors whitespace-nowrap"
               >
-                บันทึก
+                {t.saveButton}
               </button>
           </div>
           {saveSuccess && (
             <p className="text-xs text-green-400 mt-2 text-center">
-              บันทึก API Key เรียบร้อยแล้ว!
+              {t.saveSuccess}
             </p>
           )}
           <div className="text-xs text-gray-400 mt-2 text-center">
             <p>
-              แอปพลิเคชันนี้ต้องใช้ Gemini API Key จาก{' '}
+              {t.apiKeyInfo}{' '}
               <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-brand-light underline hover:text-brand-secondary">
-                  Google AI Studio
+                  {t.getApiKeyLink}
               </a>{' '}
-              ของคุณเอง คีย์จะถูกบันทึกไว้ในเบราว์เซอร์ของคุณเท่านั้น
+              {t.apiKeyNote}
             </p>
             <button onClick={() => setIsApiKeyModalOpen(true)} className="text-brand-light underline hover:text-brand-secondary font-semibold mt-1">
-                วิธีรับ API Key?
+                {t.getApiKeyButton}
             </button>
           </div>
         </div>
 
         <div className="max-w-4xl mx-auto flex flex-col items-center space-y-6">
           <p className="text-center text-lg">
-            อัปโหลดรูปภาพและใช้ AI ช่วยแก้ไข เพิ่ม หรือลบวัตถุ เปลี่ยนสไตล์ และอื่นๆ อีกมากมาย!
+            {t.mainDescription}
           </p>
 
-          <ImageUploader onFileChange={handleFileChange} imageCount={images.length} />
+          <ImageUploader onFileChange={handleFileChange} imageCount={images.length} t={t} />
 
-          {images.length > 0 && <ImageGallery images={images} onRemove={handleRemoveImage} />}
+          {images.length > 0 && <ImageGallery images={images} onRemove={handleRemoveImage} t={t} />}
 
           <PromptControls
             prompt={prompt}
@@ -333,6 +316,7 @@ function App() {
             isLoading={!!loadingMode}
             isApiConfigured={!!apiKey}
             imageCount={images.length}
+            t={t}
           />
           
           {error && (
@@ -347,13 +331,13 @@ function App() {
             </div>
           )}
 
-          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} />}
+          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} t={t} />}
         </div>
         
-        <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} />
+        <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} t={t} />
         
       </main>
-      <Footer visitorCount={visitorCount} />
+      <Footer visitorCount={visitorCount} t={t} />
     </div>
   );
 }

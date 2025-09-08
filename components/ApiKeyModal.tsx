@@ -1,14 +1,17 @@
 import React from 'react';
+import { Translation } from '../locales/translations';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  t: Translation;
 }
 
-const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => {
+const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, t }) => {
   if (!isOpen) {
     return null;
   }
+  const steps = t.apiKeyModalSteps;
 
   return (
     <div 
@@ -24,7 +27,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => {
       >
         <div className="flex justify-between items-center mb-4">
           <h2 id="apiKeyModalTitle" className="text-xl font-bold text-content">
-            วิธีรับ Gemini API Key
+            {t.apiKeyModalTitle}
           </h2>
           <button 
             onClick={onClose} 
@@ -37,10 +40,10 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div className="space-y-3 text-sm text-gray-300">
-          <p>ทำตามขั้นตอนง่ายๆ ดังนี้เพื่อรับ API Key ของคุณ:</p>
+          <p>{t.apiKeyModalDescription}</p>
           <ol className="list-decimal list-inside space-y-2 pl-2">
             <li>
-              ไปที่{' '}
+              {steps.step1}{' '}
               <a 
                 href="https://aistudio.google.com/apikey" 
                 target="_blank" 
@@ -50,21 +53,13 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => {
                 Google AI Studio
               </a>.
             </li>
-            <li>
-              คลิกที่ปุ่ม <strong>"Create API key"</strong>.
-            </li>
-            <li>
-              เลือกโปรเจกต์ Google Cloud ของคุณ หรือสร้างโปรเจกต์ใหม่.
-            </li>
-            <li>
-              คัดลอก API key ที่ปรากฏขึ้นมา.
-            </li>
-            <li>
-              นำคีย์มาวางในช่องใส่ API Key ในแอปพลิเคชันนี้ แล้วกด "บันทึก".
-            </li>
+            <li>{steps.step2}</li>
+            <li>{steps.step3}</li>
+            <li>{steps.step4}</li>
+            <li>{steps.step5}</li>
           </ol>
           <p className="mt-4 pt-3 border-t border-base-300 text-xs text-gray-400">
-            <strong>หมายเหตุ:</strong> API key ของคุณจะถูกบันทึกไว้ในเบราว์เซอร์ของคุณเท่านั้นและจะไม่ถูกส่งไปที่อื่น.
+            <strong>{t.apiKeyModalNote.split(':')[0]}:</strong> {t.apiKeyModalNote.split(':')[1]}
           </p>
         </div>
       </div>

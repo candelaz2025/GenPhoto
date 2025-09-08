@@ -1,16 +1,18 @@
 import React from 'react';
 import { type UploadedImage } from '../types';
 import { TrashIcon } from './IconComponents';
+import { Translation } from '../locales/translations';
 
 interface ImageGalleryProps {
   images: UploadedImage[];
   onRemove: (id: string) => void;
+  t: Translation;
 }
 
-const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onRemove }) => {
+const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onRemove, t }) => {
   return (
     <div className="space-y-4 p-4 bg-base-200/50 rounded-lg">
-        <h2 className="text-xl font-semibold text-center">รูปภาพอ้างอิงของคุณ</h2>
+        <h2 className="text-xl font-semibold text-center">{t.galleryTitle}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {images.map((image) => (
             <div key={image.id} className="relative group aspect-square">
@@ -22,7 +24,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onRemove }) => {
                         onRemove(image.id);
                     }}
                     className="absolute top-2 right-2 bg-red-600/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                    aria-label="Remove image"
+                    aria-label={t.removeImageTooltip}
+                    title={t.removeImageTooltip}
                 >
                     <TrashIcon className="w-4 h-4" />
                 </button>

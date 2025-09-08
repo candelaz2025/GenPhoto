@@ -1,21 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const imageLoadingMessages = [
-    "กำลังเริ่มต้น AI สร้างสรรค์...",
-    "กำลังวิเคราะห์รูปภาพอ้างอิง...",
-    "กำลังประมวลผลด้วยวงจรศิลปะ...",
-    "กำลังวาดภาพด้วยแสงดิจิทัล...",
-    "กำลังเก็บรายละเอียดสุดท้าย...",
-];
-
-const videoLoadingMessages = [
-    "กำลังเตรียมพร้อมสร้างวิดีโอ...",
-    "กำลังวิเคราะห์เฟรมแรก...",
-    "AI กำลังเรนเดอร์ภาพเคลื่อนไหว...",
-    "ขั้นตอนนี้อาจใช้เวลานานหลายนาที...",
-    "กำลังประกอบวิดีโอขั้นสุดท้าย...",
-    "ขอบคุณที่อดทนรอ!"
-];
+import { Translation } from '../locales/translations';
 
 // Helper component for a single pixel
 const Pixel: React.FC<{ color: string; }> = ({ color }) => (
@@ -93,12 +77,13 @@ const PixelZenitsu = () => {
 
 interface LoaderProps {
     mode: 'image' | 'video';
+    t: Translation;
 }
 
-const Loader: React.FC<LoaderProps> = ({ mode }) => {
+const Loader: React.FC<LoaderProps> = ({ mode, t }) => {
     const messages = mode === 'video' 
-        ? videoLoadingMessages 
-        : imageLoadingMessages;
+        ? t.videoLoadingMessages 
+        : t.imageLoadingMessages;
         
     const [message, setMessage] = React.useState(messages[0]);
 

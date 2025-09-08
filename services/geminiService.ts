@@ -1,41 +1,43 @@
 // Fix: Provide the implementation for the Gemini API service.
 // Fix: Replaced non-existent 'ContentPart' type with the correct 'Part' type.
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
-import { UploadedImage, Result, AspectRatio, ArtisticStyle } from '../types';
+import { UploadedImage, Result, AspectRatio, ArtisticStyle, Language } from '../types';
+import { translations } from '../locales/translations';
 
 /**
  * Handles API errors by converting them into user-friendly messages.
  * @param error The error caught from the API call.
+ * @param lang The current language for the error message.
  * @returns A user-friendly error string.
  */
-const handleApiError = (error: unknown): string => {
+const handleApiError = (error: unknown, lang: Language): string => {
     console.error('API Error:', error); // Log the full error for debugging
+    const t = translations[lang].error;
+
     if (error instanceof Error) {
         const message = error.message.toLowerCase();
         
         if (message.includes('api key not valid') || message.includes('invalid api key') || message.includes('api_key_invalid')) {
-            return 'API Key ไม่ถูกต้องหรือไม่ได้รับอนุญาต โปรดตรวจสอบและบันทึกคีย์ของคุณอีกครั้ง';
+            return t.invalidKey;
         }
         if (message.includes('rate limit') || message.includes('quota')) {
-            return 'ใช้งานเกินขีดจำกัดแล้ว โปรดรอสักครู่แล้วลองอีกครั้งในภายหลัง';
+            return t.rateLimit;
         }
         if (message.includes('failed to fetch')) {
-            return 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ';
+            return t.network;
         }
         if (message.includes('prompt was blocked') || message.includes('safety policy')) {
-            return 'คำสั่งหรือรูปภาพของคุณถูกบล็อกเนื่องจากนโยบายความปลอดภัย โปรดลองใช้คำสั่งอื่น';
+            return t.safety;
         }
         if (message.includes('empty response') || message.includes('no content generated')) {
-            return 'AI ไม่ได้ส่งคืนผลลัพธ์ใดๆ โปรดลองปรับเปลี่ยนคำสั่งหรือรูปภาพของคุณ';
+            return t.emptyResponse;
         }
         if (message.includes('invalid argument')) {
-            return 'มีข้อผิดพลาดกับข้อมูลที่ส่งไป โปรดตรวจสอบคำสั่งและรูปภาพของคุณ';
+            return t.invalidArgument;
         }
-        // Fallback for other known errors from the SDK
-        return `เกิดข้อผิดพลาดจาก API: ${error.message}`;
+        return t.apiError(error.message);
     }
-    // Fallback for totally unknown errors
-    return 'เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองอีกครั้งในภายหลัง';
+    return t.default;
 };
 
 
@@ -44,19 +46,18 @@ export const editImageWithGemini = async (
   images: UploadedImage[],
   aspectRatio: AspectRatio,
   style: ArtisticStyle,
-  apiKey: string
+  apiKey: string,
+  lang: Language
 ): Promise<Result> => {
-  if (!apiKey) throw new Error('API Key is required.');
+  const t = translations[lang];
+  if (!apiKey) throw new Error(t.error.apiKey);
   const ai = new GoogleGenAI({ apiKey });
 
   if (!prompt && images.length === 0) {
-    throw new Error('Please provide a prompt or at least one image.');
+    throw new Error(t.error.promptOrImage);
   }
 
-  // Fix: Use the 'gemini-2.5-flash-image-preview' model for image editing tasks as per guidelines.
   const model = 'gemini-2.5-flash-image-preview';
-
-  // Fix: Updated variable type to use 'Part' instead of 'ContentPart'.
   const parts: Part[] = [];
 
   for (const image of images) {
@@ -70,27 +71,25 @@ export const editImageWithGemini = async (
 
   let finalPrompt = prompt;
   if (style !== 'Default') {
-    const styleInstruction = `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`;
+    const styleInstruction = t.service.styleInstruction(t.artisticStyles[style]);
     if (prompt) {
       finalPrompt += styleInstruction;
     } else {
-      finalPrompt = `สร้างสรรค์ภาพที่อัปโหลดขึ้นมาใหม่ในสไตล์ ${style}`;
+      finalPrompt = t.service.styleInstructionNoPrompt(t.artisticStyles[style]);
     }
   }
 
   // Add aspect ratio instruction to the prompt
-  const fullPrompt = `${finalPrompt}\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`;
+  const fullPrompt = `${finalPrompt}${t.service.aspectRatioInstruction(aspectRatio)}`;
 
   if (fullPrompt.trim()) {
     parts.push({ text: fullPrompt });
   }
 
   try {
-    // Fix: Use ai.models.generateContent to make the API call.
     const result: GenerateContentResponse = await ai.models.generateContent({
       model: model,
       contents: { parts: parts },
-      // Fix: responseModalities must include both IMAGE and TEXT for this model.
       config: {
         responseModalities: [Modality.IMAGE, Modality.TEXT],
       },
@@ -98,7 +97,6 @@ export const editImageWithGemini = async (
 
     const finalResult: Result = {};
 
-    // Fix: Correctly extract text and image data from the response candidates.
     if (result.candidates && result.candidates.length > 0) {
         for (const part of result.candidates[0].content.parts) {
           if (part.text) {
@@ -110,36 +108,36 @@ export const editImageWithGemini = async (
           }
         }
     } else {
-        // Fix: Use the direct .text property as a fallback, per guidelines.
         const text = result.text;
         if(text) {
             finalResult.text = text;
         } else {
-            throw new Error('No content generated. Please try again.');
+            throw new Error(t.error.emptyResponse);
         }
     }
 
-
     if (!finalResult.image && !finalResult.text) {
-        throw new Error('The API returned an empty response. Please check your prompt and images.');
+        throw new Error(t.error.emptyResponse);
     }
 
     return finalResult;
   } catch (error) {
-    throw new Error(handleApiError(error));
+    throw new Error(handleApiError(error, lang));
   }
 };
 
 export const generateImageWithImagen = async (
   prompt: string,
   aspectRatio: AspectRatio,
-  apiKey: string
+  apiKey: string,
+  lang: Language
 ): Promise<Result> => {
-  if (!apiKey) throw new Error('API Key is required.');
+  const t = translations[lang];
+  if (!apiKey) throw new Error(t.error.apiKey);
   const ai = new GoogleGenAI({ apiKey });
 
   if (!prompt) {
-    throw new Error('Please provide a prompt.');
+    throw new Error(t.error.promptOrImage);
   }
 
   const model = 'imagen-4.0-generate-001';
@@ -156,19 +154,15 @@ export const generateImageWithImagen = async (
     });
 
     if (!response.generatedImages || response.generatedImages.length === 0) {
-      throw new Error('The API returned no images. Please try a different prompt.');
+      throw new Error(t.error.emptyResponse);
     }
 
     const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
     const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
 
-    const finalResult: Result = {
-      image: imageUrl,
-    };
-
-    return finalResult;
+    return { image: imageUrl };
   } catch (error) {
-    throw new Error(handleApiError(error));
+    throw new Error(handleApiError(error, lang));
   }
 };
 
@@ -176,13 +170,15 @@ export const generateImageWithImagen = async (
 export const generateVideoWithVeo = async (
   prompt: string,
   images: UploadedImage[],
-  apiKey: string
+  apiKey: string,
+  lang: Language
 ): Promise<Result> => {
-    if (!apiKey) throw new Error('API Key is required.');
+    const t = translations[lang];
+    if (!apiKey) throw new Error(t.error.apiKey);
     const ai = new GoogleGenAI({ apiKey });
 
     if (!prompt) {
-        throw new Error('Please provide a prompt for video generation.');
+        throw new Error(t.error.promptOrImage);
     }
 
     const model = 'veo-2.0-generate-001';
@@ -191,7 +187,6 @@ export const generateVideoWithVeo = async (
         let operation = await ai.models.generateVideos({
             model: model,
             prompt: prompt,
-            // Use the first image as an input if available
             image: images.length > 0 ? {
                 imageBytes: images[0].base64,
                 mimeType: images[0].mimeType,
@@ -201,9 +196,7 @@ export const generateVideoWithVeo = async (
             },
         });
 
-        // Poll for the result
         while (!operation.done) {
-            // Wait for 10 seconds before checking the status again
             await new Promise(resolve => setTimeout(resolve, 10000));
             operation = await ai.operations.getVideosOperation({ operation: operation });
         }
@@ -211,51 +204,14 @@ export const generateVideoWithVeo = async (
         const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
 
         if (!downloadLink) {
-            throw new Error('Video generation finished, but no download link was found.');
+            throw new Error(t.error.videoFinishedNoLink);
         }
         
-        // The download link requires the API key to be appended for access
         const finalUrl = `${downloadLink}&key=${apiKey}`;
 
         return { videoUrl: finalUrl };
 
     } catch (error) {
-        throw new Error(handleApiError(error));
+        throw new Error(handleApiError(error, lang));
     }
-};
-
-
-export const generatePromptFromImages = async (
-  images: UploadedImage[],
-  apiKey: string
-): Promise<string> => {
-  if (!apiKey) throw new Error('API Key is required.');
-  if (images.length === 0) {
-    throw new Error('At least one image is required to generate a prompt.');
-  }
-  const ai = new GoogleGenAI({ apiKey });
-  const model = 'gemini-2.5-flash';
-
-  const parts: Part[] = images.map(image => ({
-    inlineData: {
-      data: image.base64,
-      mimeType: image.mimeType,
-    },
-  }));
-  
-  parts.push({ text: "วิเคราะห์รูปภาพเหล่านี้และช่วยสร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขหรือต่อยอดรูปภาพนี้เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ" });
-
-  try {
-    const result = await ai.models.generateContent({
-      model: model,
-      contents: { parts: parts },
-    });
-    const text = result.text;
-    if (!text) {
-      throw new Error('AI did not return a prompt.');
-    }
-    return text.trim();
-  } catch (error) {
-    throw new Error(handleApiError(error));
-  }
 };
