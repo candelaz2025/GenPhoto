@@ -24,6 +24,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
 }) => {
   const [placeholder, setPlaceholder] = useState('');
+  const [videoWarningShown, setVideoWarningShown] = useState(false);
   const promptWrapperRef = useRef<HTMLDivElement>(null);
   const maxLength = 1000;
 
@@ -31,7 +32,8 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     studio: `วางสินค้าที่อัปโหลดบนแท่นโชว์สินค้าทรงเรขาคณิตสีขาวสะอาดตาในสตูดิโอที่มีแสงสว่างนุ่มนวล พื้นหลังเป็นสีพาสเทลเรียบๆ เช่น สีครีมหรือสีฟ้าอ่อน สร้างเงาที่นุ่มนวลใต้สินค้าเพื่อเพิ่มความลึก ทำให้ภาพดูหรูหรา มินิมอล และทันสมัย สไตล์ภาพถ่ายสินค้ามืออาชีพ ความละเอียด 8k`,
     lifestyle: `สร้างภาพเสมือนจริงที่สินค้าที่อัปโหลดกำลังถูกใช้งานในชีวิตประจำวัน เช่น หากเป็นครีมกันแดด ให้วางอยู่บนผ้าเช็ดตัวริมสระว่ายน้ำที่มีแดดสดใส หรือหากเป็นแก้วกาแฟ ให้มีคนกำลังถืออยู่ในร้านกาแฟบรรยากาศอบอุ่น เน้นให้ภาพดูเป็นธรรมชาติและเข้าถึงง่าย แสงสวยงามเหมือนถ่ายตอน Golden Hour สไตล์ภาพถ่ายไลฟ์สไตล์`,
     nature: `จัดวางสินค้าที่อัปโหลดท่ามกลางองค์ประกอบจากธรรมชาติที่สวยงาม เช่น ใบไม้เขียวชอุ่ม ดอกไม้สด หรือบนก้อนหินที่มีมอสเกาะอยู่ แสงแดดส่องลอดผ่านใบไม้ลงมาสร้างลวดลายบนสินค้า ให้ความรู้สึกสดชื่น ออร์แกนิก และเชื่อมโยงกับธรรมชาติ เหมาะสำหรับสินค้าเพื่อสุขภาพหรือความงาม`,
-    luxurious: `นำเสนอสินค้าที่อัปโหลดในฉากที่ดูหรูหราและน่าทึ่ง เช่น บนพื้นหลังผ้าไหมสีเข้ม มีควันหรือหมอกบางๆ ลอยอยู่รอบๆ แสงสปอตไลท์ส่องลงมาที่ตัวสินค้าโดยตรงเพื่อสร้างคอนทราสต์ที่ชัดเจน ทำให้สินค้าดูโดดเด่น มีระดับ และน่าค้นหา สไตล์ภาพถ่ายโฆษณาสินค้าหรู`
+    luxurious: `นำเสนอสินค้าที่อัปโหลดในฉากที่ดูหรูหราและน่าทึ่ง เช่น บนพื้นหลังผ้าไหมสีเข้ม มีควันหรือหมอกบางๆ ลอยอยู่รอบๆ แสงสปอตไลท์ส่องลงมาที่ตัวสินค้าโดยตรงเพื่อสร้างคอนทราสต์ที่ชัดเจน ทำให้สินค้าดูโดดเด่น มีระดับ และน่าค้นหา สไตล์ภาพถ่ายโฆษณาสินค้าหรู`,
+    productMockup: `Ultra-realistic advertising style, a giant golden tube of "Pantene Pro-V 3 Minute Miracle Daily Moisture Renewal Conditioner" standing majestically in the middle of a serene lake surrounded by pine forests and snow-capped mountains in the background, the tube is overgrown with green vines and leaves at its base, two realistic bears standing near the foreground on both sides, rocks and grass on the ground, white flowers blooming around, a hummingbird flying near the top left, other birds soaring across a bright blue sky with scattered clouds, soft sunlight illuminating the scene, magical fantasy atmosphere, hyper-detailed textures, 4K, vertical aspect ratio 4:5.`
   };
   
   // Effect for dynamic placeholder
@@ -63,6 +65,50 @@ const PromptControls: React.FC<PromptControlsProps> = ({
       if (!isLoading && isApiConfigured) {
         onSubmit();
       }
+    }
+  };
+
+  const handleStyleChange = (newStyleValue: ArtisticStyle) => {
+    const oldStyleValue = style;
+    let newPromptText = prompt;
+    
+    // If there was a previous style, try to remove its instruction from the prompt
+    if (oldStyleValue !== 'Default') {
+        const oldStyleText = t.artisticStyles[oldStyleValue];
+        const oldInstructionWithPrompt = t.service.styleInstruction(oldStyleText).trim();
+        const oldInstructionWithoutPrompt = t.service.styleInstructionNoPrompt(oldStyleText).trim();
+
+        newPromptText = newPromptText.replace(oldInstructionWithPrompt, '').trim();
+        newPromptText = newPromptText.replace(oldInstructionWithoutPrompt, '').trim();
+    }
+    
+    // If the new style is not 'Default', add its instruction
+    if (newStyleValue !== 'Default') {
+        const newStyleText = t.artisticStyles[newStyleValue];
+        let newInstruction = '';
+
+        const hasBasePrompt = newPromptText.trim().length > 0;
+        if (imageCount > 0 && !hasBasePrompt) {
+            newInstruction = t.service.styleInstructionNoPrompt(newStyleText).trim();
+        } else {
+            newInstruction = t.service.styleInstruction(newStyleText).trim();
+        }
+        
+        newPromptText = (newPromptText ? newPromptText + ' ' : '') + newInstruction;
+    }
+
+    setPrompt(newPromptText);
+    setStyle(newStyleValue);
+  };
+
+  const handleModeChange = (mode: 'image' | 'video') => {
+    if (mode === 'video' && !videoWarningShown) {
+      if (window.confirm(t.videoWarningMessage)) {
+        setGenerationMode('video');
+        setVideoWarningShown(true);
+      }
+    } else {
+      setGenerationMode(mode);
     }
   };
 
@@ -112,6 +158,9 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             <button onClick={() => setPrompt(adTemplatePrompts.luxurious)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperLuxurious}
             </button>
+            <button onClick={() => setPrompt(adTemplatePrompts.productMockup)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+              {t.adHelperProductMockup}
+            </button>
           </div>
         </div>
       )}
@@ -121,7 +170,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             <label className="font-semibold text-content">{t.modeLabel}</label>
             <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
                 <button
-                    onClick={() => setGenerationMode('image')}
+                    onClick={() => handleModeChange('image')}
                     disabled={isLoading}
                     className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
                     generationMode === 'image' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
@@ -130,7 +179,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                     {t.modeImage}
                 </button>
                 <button
-                    onClick={() => setGenerationMode('video')}
+                    onClick={() => handleModeChange('video')}
                     disabled={isLoading}
                     className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
                     generationMode === 'video' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
@@ -149,7 +198,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                 {artisticStyles.map(({ label, value }) => (
                   <button
                     key={value}
-                    onClick={() => setStyle(value)}
+                    onClick={() => handleStyleChange(value)}
                     disabled={isLoading}
                     className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
                       style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'

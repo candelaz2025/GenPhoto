@@ -45,7 +45,6 @@ export const editImageWithGemini = async (
   prompt: string,
   images: UploadedImage[],
   aspectRatio: AspectRatio,
-  style: ArtisticStyle,
   apiKey: string,
   lang: Language
 ): Promise<Result> => {
@@ -80,17 +79,6 @@ export const editImageWithGemini = async (
       }
   } else if (images.length === 1 && prompt.trim()) {
       finalPrompt = t.service.editSingleImageWithPrompt(prompt);
-  }
-
-  // Handle style instruction
-  if (style !== 'Default') {
-      const styleInstruction = t.service.styleInstruction(t.artisticStyles[style]);
-      if (finalPrompt.trim()) {
-          finalPrompt += styleInstruction;
-      } else {
-          // This case is for 1 image, no prompt, but a style is selected.
-          finalPrompt = t.service.styleInstructionNoPrompt(t.artisticStyles[style]);
-      }
   }
 
   // Add aspect ratio instruction to the prompt

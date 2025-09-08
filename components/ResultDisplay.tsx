@@ -15,18 +15,24 @@ interface ResultDisplayProps {
 }
 
 /**
- * Creates an image from a data URL, crops it, rotates it, and adjusts brightness.
+ * Creates an image from a data URL, crops it, rotates it, and adjusts color properties.
  * @param {string} imageSrc - The source data URL of the image.
  * @param {Area} crop - The pixel area to crop.
  * @param {number} rotation - The rotation angle in degrees.
  * @param {number} brightness - The brightness value (100 is normal).
+ * @param {number} saturation - The saturation value (100 is normal).
+ * @param {number} contrast - The contrast value (100 is normal).
+ * @param {number} hue - The hue rotation value in degrees (0 is normal).
  * @returns {Promise<string>} A promise that resolves with the new data URL.
  */
 const getEditedImage = async (
   imageSrc: string,
   crop: Area | null,
   rotation = 0,
-  brightness = 100
+  brightness = 100,
+  saturation = 100,
+  contrast = 100,
+  hue = 0
 ): Promise<string> => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -50,7 +56,7 @@ const getEditedImage = async (
   canvas.width = bBoxWidth;
   canvas.height = bBoxHeight;
 
-  ctx.filter = `brightness(${brightness}%)`;
+  ctx.filter = `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) hue-rotate(${hue}deg)`;
 
   // translate canvas context to a central location to allow rotating and flipping around the center
   ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
@@ -94,9 +100,12 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
 
   // Editing state
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTool, setActiveTool] = useState<'crop' | 'brightness' | 'mask' | null>(null);
+  const [activeTool, setActiveTool] = useState<'crop' | 'adjust' | 'mask' | null>(null);
   const [tempRotation, setTempRotation] = useState(0);
   const [tempBrightness, setTempBrightness] = useState(100);
+  const [tempSaturation, setTempSaturation] = useState(100);
+  const [tempContrast, setTempContrast] = useState(100);
+  const [tempHue, setTempHue] = useState(0);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [cropZoom, setCropZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -133,7 +142,10 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
         result.image,
         croppedAreaPixels,
         tempRotation,
-        tempBrightness
+        tempBrightness,
+        tempSaturation,
+        tempContrast,
+        tempHue
       );
       setCurrentImage(editedImg);
       setIsEditing(false);
@@ -149,6 +161,9 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
     setActiveTool(null);
     setTempRotation(0);
     setTempBrightness(100);
+    setTempSaturation(100);
+    setTempContrast(100);
+    setTempHue(0);
     setCroppedAreaPixels(null);
     setCrop({ x: 0, y: 0 });
     setCropZoom(1);
@@ -333,7 +348,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
                     className="w-full h-full object-contain transition-all duration-100 ease-out"
                     style={{ 
                         transform: `rotate(${tempRotation}deg)`,
-                        filter: `brightness(${tempBrightness}%)`,
+                        filter: `brightness(${tempBrightness}%) saturate(${tempSaturation}%) contrast(${tempContrast}%) hue-rotate(${tempHue}deg)`,
                         willChange: 'transform, filter',
                     }}
                 />
@@ -351,10 +366,24 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
             )}
         </div>
         <div className="bg-base-300/50 p-3 rounded-lg flex flex-col gap-4">
-           {activeTool === 'brightness' && (
-             <div className="flex items-center gap-2 px-2 animate-fade-in">
-                <span className="text-xs text-white">{t.brightness}</span>
-                 <input type="range" min="50" max="150" value={tempBrightness} onChange={(e) => setTempBrightness(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
+           {activeTool === 'adjust' && (
+             <div className="flex flex-col gap-2 px-2 animate-fade-in">
+                <div className="flex items-center gap-2">
+                    <label className="text-xs text-white w-16">{t.brightness}</label>
+                    <input type="range" min="50" max="150" value={tempBrightness} onChange={(e) => setTempBrightness(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-xs text-white w-16">{t.saturation}</label>
+                    <input type="range" min="0" max="200" value={tempSaturation} onChange={(e) => setTempSaturation(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-xs text-white w-16">{t.contrast}</label>
+                    <input type="range" min="50" max="150" value={tempContrast} onChange={(e) => setTempContrast(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-xs text-white w-16">{t.hue}</label>
+                    <input type="range" min="-180" max="180" value={tempHue} onChange={(e) => setTempHue(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
+                </div>
              </div>
            )}
            {activeTool === 'mask' && (
@@ -375,7 +404,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
                 <button onClick={() => setActiveTool('mask')} className={`p-2 rounded-full ${activeTool === 'mask' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.inpaintToolTooltip}><PaintBrushIcon className="w-5 h-5 text-white" /></button>
                 <button onClick={() => setActiveTool('crop')} className={`p-2 rounded-full ${activeTool === 'crop' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.cropTooltip}><CropIcon className="w-5 h-5 text-white" /></button>
                 <button onClick={handleRotate} className="p-2 rounded-full hover:bg-base-300" title={t.rotateTooltip}><RotateCcwIcon className="w-5 h-5 text-white" /></button>
-                <button onClick={() => setActiveTool('brightness')} className={`p-2 rounded-full ${activeTool === 'brightness' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.brightnessTooltip}><BrightnessIcon className="w-5 h-5 text-white" /></button>
+                <button onClick={() => setActiveTool('adjust')} className={`p-2 rounded-full ${activeTool === 'adjust' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.adjustmentsTooltip}><BrightnessIcon className="w-5 h-5 text-white" /></button>
                 <div className="w-px h-6 bg-gray-600" />
                 <button onClick={handleCancelEditMode} className="p-2 rounded-full hover:bg-red-500/50" title={t.cancelTooltip}><XIcon className="w-6 h-6 text-red-400" /></button>
                 <button onClick={activeTool === 'mask' ? handleRegenerate : handleApplyEdits} disabled={isProcessingEdit} className="p-2 rounded-full hover:bg-green-500/50 disabled:cursor-not-allowed" title={activeTool === 'mask' ? t.regenerateButton : t.applyChangesTooltip}>

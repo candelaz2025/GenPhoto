@@ -41,9 +41,11 @@ export interface Translation {
     adHelperLifestyle: string;
     adHelperNature: string;
     adHelperLuxurious: string;
+    adHelperProductMockup: string;
     modeLabel: string;
     modeImage: string;
     modeVideo: string;
+    videoWarningMessage: string;
     styleLabel: string;
     aspectRatioLabel: string;
     aspectRatioSquare: string;
@@ -75,7 +77,10 @@ export interface Translation {
     cropTooltip: string;
     rotateTooltip: string;
     brightness: string;
-    brightnessTooltip: string;
+    saturation: string;
+    contrast: string;
+    hue: string;
+    adjustmentsTooltip: string;
     cancelTooltip: string;
     applyChangesTooltip: string;
     regenerateButton: string;
@@ -186,9 +191,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         adHelperLifestyle: "แนวไลฟ์สไตล์",
         adHelperNature: "แนวธรรมชาติ",
         adHelperLuxurious: "แนวหรูหรา",
+        adHelperProductMockup: "รูปสินค้าตัวอย่าง",
         modeLabel: "โหมด",
         modeImage: "รูปภาพ",
         modeVideo: "วิดีโอ",
+        videoWarningMessage: "ฟีเจอร์วิดีโอกำลังอยู่ระหว่างการพัฒนาและอาจมีค่าใช้จ่ายสูง คุณต้องการดำเนินการต่อหรือไม่?",
         styleLabel: "สไตล์ภาพ",
         aspectRatioLabel: "อัตราส่วนภาพ",
         aspectRatioSquare: "สี่เหลี่ยม",
@@ -216,7 +223,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         cropTooltip: "ครอบตัด",
         rotateTooltip: "หมุน",
         brightness: "ความสว่าง",
-        brightnessTooltip: "ปรับความสว่าง",
+        saturation: "ความอิ่มสี",
+        contrast: "คอนทราสต์",
+        hue: "เฉดสี",
+        adjustmentsTooltip: "ปรับสี",
         cancelTooltip: "ยกเลิก",
         applyChangesTooltip: "ใช้การเปลี่ยนแปลง",
         regenerateButton: "สร้างใหม่อีกครั้ง",
@@ -342,9 +352,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         adHelperLifestyle: "Lifestyle",
         adHelperNature: "Nature",
         adHelperLuxurious: "Luxurious",
+        adHelperProductMockup: "Product Mockup",
         modeLabel: "Mode",
         modeImage: "Image",
         modeVideo: "Video",
+        videoWarningMessage: "The video feature is under development and may be expensive. Do you want to continue?",
         styleLabel: "Style",
         aspectRatioLabel: "Aspect Ratio",
         aspectRatioSquare: "Square",
@@ -372,7 +384,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         cropTooltip: "Crop",
         rotateTooltip: "Rotate",
         brightness: "Brightness",
-        brightnessTooltip: "Adjust Brightness",
+        saturation: "Saturation",
+        contrast: "Contrast",
+        hue: "Hue",
+        adjustmentsTooltip: "Adjustments",
         cancelTooltip: "Cancel",
         applyChangesTooltip: "Apply Changes",
         regenerateButton: "Regenerate",
@@ -498,9 +513,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         adHelperLifestyle: "生活方式",
         adHelperNature: "自然风格",
         adHelperLuxurious: "奢华风格",
+        adHelperProductMockup: "产品样图",
         modeLabel: "模式",
         modeImage: "图片",
         modeVideo: "视频",
+        videoWarningMessage: "视频功能正在开发中，可能会产生高额费用。您要继续吗？",
         styleLabel: "风格",
         aspectRatioLabel: "宽高比",
         aspectRatioSquare: "方形",
@@ -528,7 +545,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         cropTooltip: "裁剪",
         rotateTooltip: "旋转",
         brightness: "亮度",
-        brightnessTooltip: "调整亮度",
+        saturation: "饱和度",
+        contrast: "对比度",
+        hue: "色相",
+        adjustmentsTooltip: "色彩调整",
         cancelTooltip: "取消",
         applyChangesTooltip: "应用更改",
         regenerateButton: "重新生成",
@@ -595,7 +615,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             },
             {
                 title: '与漫威团队的集体自拍', description: '创建一张逼真的集体自拍照，照片中有参考图片中的人物和漫威超级英雄。',
-                prompt: `A hyper-realistic group selfie using the uploaded image (maintaining the original face, clothes, and natural look). The person is holding a smartphone to take the selfie, surrounded by Marvel members: Iron Man, Captain America, Thor, Hulk, Black Widow, and Spider-Man—all smiling and posing casually like close friends. Full-body view of everyone, looking like a real selfie in a city setting, natural daylight, cinematic quality, vibrant colors, photorealistic style.`,
+                prompt: `A hyper-realistic group selfie using the uploaded image (maintaining the original face, clothes, and natural look). The person is holding a smartphone to take the selfie, surrounded by Marvel members: Iron Man, Captain America, Thor, Hulk, Black Widow, and Spider-Man—all smiling and posing casually like close friends. Full-body view of everyone, looking like a real selfie in a a city setting, natural daylight, cinematic quality, vibrant colors, photorealistic style.`,
             },
             {
                 title: '书店里的微缩世界', description: '创建一个古雅迷人书店的微缩立体模型，细节惊人。',

@@ -198,15 +198,11 @@ function App() {
         } else {
             if (images.length > 0) {
                 const apiResult = await editImageWithGemini(
-                    prompt, images, aspectRatio, style, apiKey, language
+                    prompt, images, aspectRatio, apiKey, language
                 );
                 setResult(apiResult);
             } else {
-                let finalPrompt = prompt;
-                if (style !== 'Default') {
-                    finalPrompt = prompt + t.service.styleInstruction(t.artisticStyles[style]);
-                }
-                const apiResult = await generateImageWithImagen(finalPrompt, aspectRatio, apiKey, language);
+                const apiResult = await generateImageWithImagen(prompt, aspectRatio, apiKey, language);
                 setResult(apiResult);
             }
         }
