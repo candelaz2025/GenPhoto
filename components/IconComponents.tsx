@@ -70,3 +70,51 @@ export const ResetZoomIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" />
     </svg>
 );
+
+export const UserGroupIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-4.663M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6-7a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+);
+
+// Helper component for rendering pixel art blocks
+const PixelArt: React.FC<{ data: { r: number, c: number, s?: number, C: string }[] }> = ({ data }) => (
+    <>
+        {data.map((p, i) => (
+            <div key={i} className={p.C} style={{ gridRow: p.r, gridColumn: `${p.c} / span ${p.s || 1}` }} />
+        ))}
+    </>
+);
+
+// Data for Zenitsu's 7th Form pixel art icon
+const zenitsuIconArt = {
+    dragon: [
+        { r: 2, c: 15, s: 7, C: 'bg-yellow-300' }, { r: 3, c: 13, s: 10, C: 'bg-yellow-400' },
+        { r: 4, c: 12, s: 12, C: 'bg-yellow-300' }, { r: 5, c: 14, s: 2, C: 'bg-red-500' },
+        { r: 5, c: 16, s: 7, C: 'bg-yellow-400' }, { r: 6, c: 18, s: 5, C: 'bg-yellow-300' },
+        { r: 6, c: 6, s: 8, C: 'bg-yellow-400' }, { r: 7, c: 4, s: 11, C: 'bg-yellow-300' },
+        { r: 8, c: 3, s: 14, C: 'bg-yellow-400' }, { r: 9, c: 3, s: 15, C: 'bg-yellow-300' },
+        { r: 10, c: 4, s: 16, C: 'bg-yellow-400' }, { r: 11, c: 7, s: 15, C: 'bg-yellow-300' },
+        { r: 12, c: 10, s: 13, C: 'bg-yellow-400' }, { r: 13, c: 13, s: 10, C: 'bg-yellow-300' },
+        { r: 14, c: 15, s: 8, C: 'bg-yellow-400' }, { r: 15, c: 17, s: 6, C: 'bg-yellow-300' },
+    ],
+    zenitsu: [
+        { r: 13, c: 6, s: 4, C: 'bg-yellow-400' }, { r: 14, c: 5, s: 6, C: 'bg-orange-500' },
+        { r: 15, c: 5, s: 6, C: 'bg-yellow-200' }, { r: 16, c: 6, s: 5, C: 'bg-gray-800' },
+        { r: 17, c: 7, s: 6, C: 'bg-yellow-400' }, { r: 18, c: 7, s: 6, C: 'bg-yellow-400' },
+        { r: 19, c: 8, s: 2, C: 'bg-gray-800' }, { r: 20, c: 9, s: 2, C: 'bg-gray-800' },
+    ],
+    sword: [
+        { r: 16, c: 2, s: 10, C: 'bg-blue-300' }, { r: 17, c: 2, s: 3, C: 'bg-white' },
+    ]
+};
+
+export const ZenitsuSeventhFormIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
+    <div {...props}>
+      <div className="w-full h-full grid" style={{ gridTemplateColumns: 'repeat(24, 1fr)', gridTemplateRows: 'repeat(24, 1fr)' }}>
+           <PixelArt data={zenitsuIconArt.dragon} />
+           <PixelArt data={zenitsuIconArt.zenitsu} />
+           <PixelArt data={zenitsuIconArt.sword} />
+      </div>
+    </div>
+);

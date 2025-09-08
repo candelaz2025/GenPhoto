@@ -44,6 +44,7 @@ function App() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false); // State for the examples modal
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
 
   // Load API key from local storage on mount, or use the default
@@ -99,6 +100,23 @@ function App() {
     }
   }, [history]);
   
+  // Fetch visitor count on mount
+  useEffect(() => {
+    const fetchVisitorCount = async () => {
+        try {
+            const response = await fetch('https://api.countapi.xyz/hit/imagegen-nanobanana/visits');
+            if (response.ok) {
+                const data = await response.json();
+                setVisitorCount(data.value);
+            }
+        } catch (err) {
+            console.error("Failed to fetch visitor count:", err);
+            // Fail silently and don't show the counter
+        }
+    };
+    fetchVisitorCount();
+  }, []);
+
   const handleSaveApiKey = () => {
     setApiKey(apiKeyInput);
     setSaveSuccess(true);
@@ -145,8 +163,7 @@ function App() {
    */
   const handleError = (err: unknown, defaultMessage: string) => {
     console.error(err);
-    // The service layer already formats the error message to be user-friendly.
-    // We just need to extract it. If it's not a standard Error, use the fallback.
+    // The service layer ensures a user-friendly message is in `err.message`.
     setError(err instanceof Error ? err.message : defaultMessage);
   };
 
@@ -318,7 +335,17 @@ function App() {
             imageCount={images.length}
           />
           
-          {error && <div className="text-red-500 bg-red-100 p-3 rounded-lg text-center">{error}</div>}
+          {error && (
+            <div 
+              className="w-full p-4 my-2 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-center flex items-center justify-center gap-3 animate-fade-in"
+              role="alert"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
 
           {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} />}
         </div>
@@ -326,7 +353,7 @@ function App() {
         <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} />
         
       </main>
-      <Footer />
+      <Footer visitorCount={visitorCount} />
     </div>
   );
 }
