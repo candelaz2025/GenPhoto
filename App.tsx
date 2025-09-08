@@ -11,6 +11,7 @@ import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
 import ApiKeyModal from './components/ApiKeyModal';
 import PromptExamplesModal from './components/PromptExamplesModal';
+import WhatsNewModal from './components/WhatsNewModal';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language } from './types';
 import { translations } from './locales/translations';
@@ -25,6 +26,7 @@ const fileToBase64 = (file: File): Promise<string> =>
   });
 
 const DEFAULT_API_KEY = 'P2AMML5VGC4XQVYASFHA73CFAU';
+const CURRENT_APP_VERSION = '2024-07-28'; // Update this date for new features to trigger the modal
 
 function App() {
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -47,6 +49,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
+  const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
@@ -58,6 +61,14 @@ function App() {
     const keyToUse = savedApiKey || DEFAULT_API_KEY;
     setApiKey(keyToUse);
     setApiKeyInput(keyToUse);
+  }, []);
+
+  // Show "What's New" modal on first visit or after an update
+  useEffect(() => {
+    const lastSeenVersion = localStorage.getItem('app-last-seen-version');
+    if (lastSeenVersion !== CURRENT_APP_VERSION) {
+      setIsWhatsNewModalOpen(true);
+    }
   }, []);
 
   // Update HTML lang attribute when language changes
@@ -121,6 +132,11 @@ function App() {
     };
     fetchVisitorCount();
   }, []);
+  
+  const handleCloseWhatsNewModal = () => {
+    setIsWhatsNewModalOpen(false);
+    localStorage.setItem('app-last-seen-version', CURRENT_APP_VERSION);
+  };
 
   const handleSaveApiKey = () => {
     setApiKey(apiKeyInput);
@@ -283,6 +299,11 @@ function App() {
         isOpen={isExamplesModalOpen} 
         onClose={() => setIsExamplesModalOpen(false)}
         onSelectPrompt={handleSelectPrompt}
+        t={t}
+      />
+      <WhatsNewModal 
+        isOpen={isWhatsNewModalOpen}
+        onClose={handleCloseWhatsNewModal}
         t={t}
       />
       <Header t={t} language={language} setLanguage={setLanguage} />

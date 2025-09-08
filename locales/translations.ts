@@ -7,6 +7,12 @@ export interface PromptExample {
     prompt: string;
 }
 
+export interface WhatsNewFeature {
+    icon: string;
+    title: string;
+    description: string;
+}
+
 // Type for the entire translation structure
 export interface Translation {
     // Header & Footer
@@ -107,6 +113,13 @@ export interface Translation {
         step5: string;
     };
     apiKeyModalNote: string;
+    
+    // What's New Modal
+    whatsNewTitle: string;
+    whatsNewDate: string;
+    whatsNewFeatures: WhatsNewFeature[];
+    whatsNewCloseButton: string;
+
 
     // Prompt Examples Modal
     promptExamplesTitle: string;
@@ -235,6 +248,15 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             step5: 'นำคีย์มาวางในช่องใส่ API Key ในแอปพลิเคชันนี้ แล้วกด "บันทึก".',
         },
         apiKeyModalNote: "หมายเหตุ: API key ของคุณจะถูกบันทึกไว้ในเบราว์เซอร์ของคุณเท่านั้นและจะไม่ถูกส่งไปที่อื่น.",
+        whatsNewTitle: "มีอะไรใหม่บ้าง?",
+        whatsNewDate: "อัปเดตล่าสุด: 28 กรกฎาคม 2024",
+        whatsNewFeatures: [
+            { icon: 'EditIcon', title: 'เครื่องมือแก้ไขภาพขั้นสูง', description: 'ตอนนี้คุณสามารถครอบตัด, หมุน, และปรับความสว่างของภาพที่สร้างขึ้นได้โดยตรงในแอป' },
+            { icon: 'PaintBrushIcon', title: 'แก้ไขภาพเฉพาะจุด (In-painting)', description: 'ระบายสีบนพื้นที่ที่ต้องการแก้ไขและใช้ AI เติมสิ่งที่ต้องการเข้าไปได้อย่างแนบเนียน' },
+            { icon: 'SparklesIcon', title: 'ผสมผสานหลายภาพ', description: 'อัปโหลดรูปภาพ 2 รูปขึ้นไปเพื่อให้ AI รวมองค์ประกอบต่างๆ สร้างเป็นภาพใหม่ที่ไม่เหมือนใคร' },
+            { icon: 'VideoIcon', title: 'สร้างวิดีโอจากภาพและข้อความ', description: 'เปลี่ยนไอเดียของคุณให้กลายเป็นวิดีโอสั้นๆ ด้วยโมเดล Veo-2.0' },
+        ],
+        whatsNewCloseButton: "เข้าใจแล้ว",
         promptExamplesTitle: "ตัวอย่าง Prompt",
         promptSearchPlaceholder: (category) => `ค้นหาในหมวดหมู่ "${category}"...`,
         promptExamplesNotFound: "ไม่พบ Prompt ที่ตรงกัน",
@@ -295,8 +317,8 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
             inpaintInstruction: (prompt) => `ใช้รูปภาพต้นฉบับและรูปภาพมาสก์สีขาวดำเป็นข้อมูลอ้างอิง ในพื้นที่ที่ระบายด้วยสีขาวบนมาสก์ ให้สร้างภาพขึ้นมาใหม่ตามคำสั่งต่อไปนี้: "${prompt}" พยายามผสมผสานส่วนที่สร้างขึ้นใหม่ให้เข้ากับภาพต้นฉบับอย่างแนบเนียนที่สุด`,
             generatePromptInstruction: "วิเคราะห์รูปภาพเหล่านี้และช่วยสร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขหรือต่อยอดรูปภาพนี้เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ",
-            combineInstructionWithPrompt: (prompt) => `รวมองค์ประกอบจากรูปภาพทั้งหมดที่อัปโหลดเข้าด้วยกันอย่างสร้างสรรค์ตามคำสั่งนี้: "${prompt}"`,
-            combineInstructionNoPrompt: `รวมองค์ประกอบจากรูปภาพทั้งหมดที่อัปโหลดเข้าด้วยกันอย่างสร้างสรรค์เพื่อสร้างเป็นภาพใหม่ที่สวยงามและลงตัว`,
+            combineInstructionWithPrompt: (prompt) => `ภารกิจของคุณคือการสังเคราะห์ภาพใหม่ที่สวยงามและลงตัวเพียงภาพเดียวตามคำสั่งต่อไปนี้: "${prompt}" ในการทำเช่นนี้ คุณต้องนำแรงบันดาลใจและผสมผสานองค์ประกอบหลัก สไตล์ และวัตถุจากรูปภาพทั้งหมดที่ให้มา ผลลัพธ์สุดท้ายควรเป็นการผสมผสานที่สร้างสรรค์และกลมกลืน โดยเคารพทั้งคำสั่งและทุกภาพที่ป้อนเข้ามา`,
+            combineInstructionNoPrompt: `ภารกิจของคุณคือการสังเคราะห์ภาพใหม่ที่สวยงามและลงตัวเพียงภาพเดียว คุณต้องนำแรงบันดาลใจและผสมผสานองค์ประกอบหลัก สไตล์ และวัตถุจากรูปภาพทั้งหมดที่ให้มา ผลลัพธ์สุดท้ายควรเป็นการผสมผสานที่สร้างสรรค์และกลมกลืนจากทุกภาพที่ป้อนเข้ามา`,
             editSingleImageWithPrompt: (prompt) => `อ้างอิงจากภาพที่อัปโหลด, ${prompt}`,
         }
     },
@@ -382,6 +404,15 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             step5: 'Paste the key into the API Key field in this application and press "Save".',
         },
         apiKeyModalNote: "Note: Your API key is stored only in your browser and is not sent anywhere else.",
+        whatsNewTitle: "What's New?",
+        whatsNewDate: "Last Updated: July 28, 2024",
+        whatsNewFeatures: [
+            { icon: 'EditIcon', title: 'Advanced Image Editor', description: 'You can now crop, rotate, and adjust the brightness of your generated images directly in the app.' },
+            { icon: 'PaintBrushIcon', title: 'In-painting Tool', description: 'Mask a specific area of your image and use the AI to seamlessly fill it with anything you can imagine.' },
+            { icon: 'SparklesIcon', title: 'Multi-Image Combination', description: 'Upload 2 or more images and let the AI creatively blend their elements into a unique new picture.' },
+            { icon: 'VideoIcon', title: 'Video Generation', description: 'Turn your ideas into short video clips using images and text prompts with the Veo-2.0 model.' },
+        ],
+        whatsNewCloseButton: "Got It!",
         promptExamplesTitle: "Prompt Examples",
         promptSearchPlaceholder: (category) => `Search in "${category}"...`,
         promptExamplesNotFound: "No matching prompts found",
@@ -442,8 +473,8 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
             inpaintInstruction: (prompt) => `Using the original image and the black-and-white mask image as references, regenerate the area marked in white on the mask according to the following instruction: "${prompt}". Blend the newly generated content seamlessly with the original image.`,
             generatePromptInstruction: "Analyze these images and help generate a creative prompt in English for editing or extending them, focusing on imagining new and interesting scenes or styles.",
-            combineInstructionWithPrompt: (prompt) => `Instruction: Creatively combine elements from all uploaded images according to this prompt: "${prompt}"`,
-            combineInstructionNoPrompt: `Instruction: Creatively combine elements from all uploaded images into a new, cohesive, and beautiful single image.`,
+            combineInstructionWithPrompt: (prompt) => `Your task is to synthesize a single, new, cohesive image based on the following prompt: "${prompt}". To do this, you must take inspiration and combine key elements, styles, and subjects from ALL of the images provided. The final result should be a creative and harmonious blend that respects both the prompt and every input image.`,
+            combineInstructionNoPrompt: `Your task is to synthesize a single, new, cohesive image. You must take inspiration and combine key elements, styles, and subjects from ALL of the images provided. The final result should be a creative and harmonious blend of every input image.`,
             editSingleImageWithPrompt: (prompt) => `Using the uploaded image as a reference, ${prompt}`,
         }
     },
@@ -529,6 +560,15 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             step5: '将密钥粘贴到此应用程序的 API 密钥字段中，然后按“保存”。',
         },
         apiKeyModalNote: "注意：您的 API 密钥仅存储在您的浏览器中，不会发送到任何其他地方。",
+        whatsNewTitle: "新功能",
+        whatsNewDate: "最后更新：2024年7月28日",
+        whatsNewFeatures: [
+            { icon: 'EditIcon', title: '高级图像编辑器', description: '您现在可以直接在应用中裁剪、旋转和调整生成图像的亮度。' },
+            { icon: 'PaintBrushIcon', title: '局部重绘工具', description: '在图像的特定区域上绘制蒙版，然后使用 AI 将您想象的任何内容无缝填充进去。' },
+            { icon: 'SparklesIcon', title: '多图像融合', description: '上传2张或更多图片，让 AI 创造性地将其元素融合成一张独特的新图片。' },
+            { icon: 'VideoIcon', title: '视频生成', description: '使用 Veo-2.0 模型，通过图片和文字提示将您的想法变成短视频片段。' },
+        ],
+        whatsNewCloseButton: "知道了",
         promptExamplesTitle: "提示示例",
         promptSearchPlaceholder: (category) => `在“${category}”中搜索...`,
         promptExamplesNotFound: "未找到匹配的提示",
@@ -589,8 +629,8 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             aspectRatioInstruction: (aspectRatio) => `\n\n重要：以 ${aspectRatio} 的宽高比生成图像。`,
             inpaintInstruction: (prompt) => `使用原始图像和黑白蒙版图像作为参考，根据以下说明重新生成蒙版上标记为白色的区域：“${prompt}”。将新生成的内容与原始图像无缝融合。`,
             generatePromptInstruction: "分析这些图像，并帮助用中文生成一个创意提示，用于编辑或扩展它们，重点是想象新的有趣的场景或风格。",
-            combineInstructionWithPrompt: (prompt) => `指令：根据以下提示，创造性地结合所有上传图像中的元素：“${prompt}”`,
-            combineInstructionNoPrompt: `指令：创造性地结合所有上传图像中的元素，创作出一张和谐美观的新图像。`,
+            combineInstructionWithPrompt: (prompt) => `你的任务是根据以下提示合成一张全新的、有凝聚力的图像：“${prompt}”。要做到这一点，你必须从所有提供的图像中获取灵感，并结合关键元素、风格和主题。最终结果应该是一个既尊重提示又尊重每一张输入图像的创造性和谐的融合。`,
+            combineInstructionNoPrompt: `你的任务是合成一张全新的、有凝聚力的图像。你必须从所有提供的图像中获取灵感，并结合关键元素、风格和主题。最终结果应该是每一张输入图像的创造性和谐的融合。`,
             editSingleImageWithPrompt: (prompt) => `参考上传的图片，${prompt}`,
         }
     },
