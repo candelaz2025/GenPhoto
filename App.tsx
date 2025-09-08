@@ -15,7 +15,7 @@ import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle } from './types';
-import { translations } from './locales/translations';
+import { translations, PromptExample } from './locales/translations';
 
 // Helper function to convert file to base64
 const fileToBase64 = (file: File): Promise<string> =>
@@ -31,6 +31,7 @@ const CURRENT_APP_VERSION = '2025-09-08'; // Update this date for new features t
 
 function App() {
   const [images, setImages] = useState<UploadedImage[]>([]);
+  const [promptTitle, setPromptTitle] = useState('');
   const [prompt, setPrompt] = useState('');
   const [apiKey, setApiKey] = useState<string>('');
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
@@ -39,7 +40,7 @@ function App() {
     () => (localStorage.getItem('app-language') as Language) || 'th'
   );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
-    () => (localStorage.getItem('gemini-aspect-ratio') as AspectRatio) || '1:1'
+    () => (localStorage.getItem('gemini-aspect-ratio') as AspectRatio) || '16:9'
   );
   const [style, setStyle] = useState<ArtisticStyle>(
     () => (localStorage.getItem('gemini-style') as ArtisticStyle) || 'Default'
@@ -177,18 +178,21 @@ function App() {
     setError(null);
     setResult(null);
 
+    // Combine title and prompt
+    const fullPrompt = promptTitle ? `${promptTitle}: ${prompt}` : prompt;
+
     try {
         if (generationMode === 'video') {
-            const apiResult = await generateVideoWithVeo(prompt, images, apiKey, language);
+            const apiResult = await generateVideoWithVeo(fullPrompt, images, apiKey, language);
             setResult(apiResult);
         } else {
             if (images.length > 0) {
                 const apiResult = await editImageWithGemini(
-                    prompt, images, aspectRatio, apiKey, language, overlayText, fontStyle
+                    fullPrompt, images, aspectRatio, apiKey, language, overlayText, fontStyle
                 );
                 setResult(apiResult);
             } else {
-                const apiResult = await generateImageWithImagen(prompt, aspectRatio, apiKey, language, overlayText, fontStyle);
+                const apiResult = await generateImageWithImagen(fullPrompt, aspectRatio, apiKey, language, overlayText, fontStyle);
                 setResult(apiResult);
             }
         }
@@ -269,8 +273,9 @@ function App() {
     }
   }
 
-  const handleSelectPrompt = (selectedPrompt: string) => {
-    setPrompt(selectedPrompt);
+  const handleSelectPrompt = (example: PromptExample) => {
+    setPromptTitle(example.title);
+    setPrompt(example.prompt);
     setIsExamplesModalOpen(false);
   };
 
@@ -340,6 +345,8 @@ function App() {
           {images.length > 0 && <ImageGallery images={images} onRemove={handleRemoveImage} t={t} />}
 
           <PromptControls
+            promptTitle={promptTitle}
+            setPromptTitle={setPromptTitle}
             prompt={prompt}
             setPrompt={setPrompt}
             overlayText={overlayText}

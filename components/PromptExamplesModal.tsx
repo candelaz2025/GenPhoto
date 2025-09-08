@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Translation, PromptExample } from '../locales/translations';
 
 interface PromptExamplesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectPrompt: (prompt: string) => void;
+  onSelectPrompt: (example: PromptExample) => void;
   t: Translation;
 }
 
@@ -125,7 +126,7 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
                             <h3 className="font-semibold text-brand-light mb-2 flex-grow min-h-[40px]">{example.title}</h3>
                             <p className="text-sm text-gray-400 mb-4 h-24 overflow-y-auto">{example.description}</p>
                             <button 
-                                onClick={() => onSelectPrompt(example.prompt)}
+                                onClick={() => onSelectPrompt(example)}
                                 className="w-full mt-auto px-4 py-2 bg-brand-primary text-white text-sm font-semibold rounded-lg hover:bg-brand-secondary transition-colors"
                             >
                                 {t.selectPromptButton}

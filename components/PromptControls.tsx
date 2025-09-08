@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, VideoIcon } from './IconComponents';
 import { AspectRatio, ArtisticStyle, FontStyle } from '../types';
 import { Translation } from '../locales/translations';
 
 interface PromptControlsProps {
+  promptTitle: string;
+  setPromptTitle: React.Dispatch<React.SetStateAction<string>>;
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   overlayText: string;
@@ -25,7 +28,7 @@ interface PromptControlsProps {
 }
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
-    prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
+    promptTitle, setPromptTitle, prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
     aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, 
     onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
 }) => {
@@ -158,19 +161,19 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             {t.adHelperTitle}
           </h3>
           <div className="flex flex-wrap gap-2 justify-center">
-            <button onClick={() => setPrompt(adTemplatePrompts.studio)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            <button onClick={() => { setPromptTitle(t.adHelperStudio); setPrompt(adTemplatePrompts.studio); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperStudio}
             </button>
-            <button onClick={() => setPrompt(adTemplatePrompts.lifestyle)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            <button onClick={() => { setPromptTitle(t.adHelperLifestyle); setPrompt(adTemplatePrompts.lifestyle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperLifestyle}
             </button>
-            <button onClick={() => setPrompt(adTemplatePrompts.nature)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            <button onClick={() => { setPromptTitle(t.adHelperNature); setPrompt(adTemplatePrompts.nature); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperNature}
             </button>
-            <button onClick={() => setPrompt(adTemplatePrompts.luxurious)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            <button onClick={() => { setPromptTitle(t.adHelperLuxurious); setPrompt(adTemplatePrompts.luxurious); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperLuxurious}
             </button>
-            <button onClick={() => setPrompt(adTemplatePrompts.productMockup)} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+            <button onClick={() => { setPromptTitle(t.adHelperProductMockup); setPrompt(adTemplatePrompts.productMockup); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
               {t.adHelperProductMockup}
             </button>
           </div>
@@ -243,22 +246,36 @@ const PromptControls: React.FC<PromptControlsProps> = ({
         )}
       </div>
 
-      <div ref={promptWrapperRef} className="relative w-full">
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="w-full p-4 pb-6 pr-20 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
-          rows={3}
-          disabled={commonButtonDisabled}
-          maxLength={mainPromptMaxLength}
+      <div className="w-full p-4 bg-base-200/50 rounded-lg space-y-3">
+        <label htmlFor="prompt-title-input" className="block text-sm font-semibold text-content">{t.promptTitleLabel}</label>
+        <input
+            id="prompt-title-input"
+            type="text"
+            value={promptTitle}
+            onChange={(e) => setPromptTitle(e.target.value)}
+            placeholder={t.promptTitlePlaceholder}
+            className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
+            disabled={commonButtonDisabled}
         />
-        <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
-          {prompt.length} / {mainPromptMaxLength}
+        <div ref={promptWrapperRef} className="relative w-full">
+            <label htmlFor="prompt-body-input" className="sr-only">{t.promptPlaceholderDefault}</label>
+            <textarea
+            id="prompt-body-input"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="w-full p-4 pb-6 pr-20 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
+            rows={3}
+            disabled={commonButtonDisabled}
+            maxLength={mainPromptMaxLength}
+            />
+            <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
+            {prompt.length} / {mainPromptMaxLength}
+            </div>
         </div>
       </div>
-      
+
       {generationMode === 'image' && (
         <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-base-300">
             <label htmlFor="text-overlay-input" className="block font-semibold text-center text-content">
