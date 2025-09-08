@@ -1,5 +1,5 @@
 {
-  "name": "โปรแกรมแก้ไขรูปภาพ Gemini",
+  "name": "Image Gen Nano Banana",
   "description": "เว็บแอปพลิเคชันที่ใช้โมเดล Gemini 'gemini-2.5-flash-image-preview' เพื่อแก้ไขและสร้างรูปภาพจากคำสั่งข้อความและรูปภาพอ้างอิง",
   "requestFramePermissions": []
 }

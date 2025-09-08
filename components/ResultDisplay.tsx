@@ -65,7 +65,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory })
         const file = new File([blob], `gemini-art-${Date.now()}.png`, { type: blob.type });
 
         await navigator.share({
-            title: 'สร้างโดยโปรแกรมแก้ไขรูปภาพ Gemini',
+            title: 'สร้างโดย Image Gen Nano Banana',
             text: 'ดูรูปภาพที่ฉันสร้างด้วย AI!',
             files: [file],
         });
