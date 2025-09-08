@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, VideoIcon } from './IconComponents';
-import { AspectRatio, ArtisticStyle } from '../types';
+import { AspectRatio, ArtisticStyle, FontStyle } from '../types';
 import { Translation } from '../locales/translations';
 
 interface PromptControlsProps {
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
+  overlayText: string;
+  setOverlayText: React.Dispatch<React.SetStateAction<string>>;
+  fontStyle: FontStyle;
+  setFontStyle: (style: FontStyle) => void;
   aspectRatio: AspectRatio;
   setAspectRatio: (ratio: AspectRatio) => void;
   style: ArtisticStyle;
@@ -21,16 +25,19 @@ interface PromptControlsProps {
 }
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
-    prompt, setPrompt, aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
+    prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
+    aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, 
+    onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
 }) => {
   const [placeholder, setPlaceholder] = useState('');
   const [videoWarningShown, setVideoWarningShown] = useState(false);
   const promptWrapperRef = useRef<HTMLDivElement>(null);
-  const maxLength = 1000;
+  const mainPromptMaxLength = 1000;
+  const textOverlayMaxLength = 300;
 
   const adTemplatePrompts = {
     studio: `วางสินค้าที่อัปโหลดบนแท่นโชว์สินค้าทรงเรขาคณิตสีขาวสะอาดตาในสตูดิโอที่มีแสงสว่างนุ่มนวล พื้นหลังเป็นสีพาสเทลเรียบๆ เช่น สีครีมหรือสีฟ้าอ่อน สร้างเงาที่นุ่มนวลใต้สินค้าเพื่อเพิ่มความลึก ทำให้ภาพดูหรูหรา มินิมอล และทันสมัย สไตล์ภาพถ่ายสินค้ามืออาชีพ ความละเอียด 8k`,
-    lifestyle: `สร้างภาพเสมือนจริงที่สินค้าที่อัปโหลดกำลังถูกใช้งานในชีวิตประจำวัน เช่น หากเป็นครีมกันแดด ให้วางอยู่บนผ้าเช็ดตัวริมสระว่ายน้ำที่มีแดดสดใส หรือหากเป็นแก้วกาแฟ ให้มีคนกำลังถืออยู่ในร้านกาแฟบรรยากาศอบอุ่น เน้นให้ภาพดูเป็นธรรมชาติและเข้าถึงง่าย แสงสวยงามเหมือนถ่ายตอน Golden Hour สไตล์ภาพถ่ายไลฟ์สไตล์`,
+    lifestyle: `สร้างภาพเสมือนจริงที่สินค้าที่อัปโหลดกำลังถูกใช้งานในชีวิตประวัน เช่น หากเป็นครีมกันแดด ให้วางอยู่บนผ้าเช็ดตัวริมสระว่ายน้ำที่มีแดดสดใส หรือหากเป็นแก้วกาแฟ ให้มีคนกำลังถืออยู่ในร้านกาแฟบรรยากาศอบอุ่น เน้นให้ภาพดูเป็นธรรมชาติและเข้าถึงง่าย แสงสวยงามเหมือนถ่ายตอน Golden Hour สไตล์ภาพถ่ายไลฟ์สไตล์`,
     nature: `จัดวางสินค้าที่อัปโหลดท่ามกลางองค์ประกอบจากธรรมชาติที่สวยงาม เช่น ใบไม้เขียวชอุ่ม ดอกไม้สด หรือบนก้อนหินที่มีมอสเกาะอยู่ แสงแดดส่องลอดผ่านใบไม้ลงมาสร้างลวดลายบนสินค้า ให้ความรู้สึกสดชื่น ออร์แกนิก และเชื่อมโยงกับธรรมชาติ เหมาะสำหรับสินค้าเพื่อสุขภาพหรือความงาม`,
     luxurious: `นำเสนอสินค้าที่อัปโหลดในฉากที่ดูหรูหราและน่าทึ่ง เช่น บนพื้นหลังผ้าไหมสีเข้ม มีควันหรือหมอกบางๆ ลอยอยู่รอบๆ แสงสปอตไลท์ส่องลงมาที่ตัวสินค้าโดยตรงเพื่อสร้างคอนทราสต์ที่ชัดเจน ทำให้สินค้าดูโดดเด่น มีระดับ และน่าค้นหา สไตล์ภาพถ่ายโฆษณาสินค้าหรู`,
     productMockup: `Ultra-realistic advertising style, a giant golden tube of "Pantene Pro-V 3 Minute Miracle Daily Moisture Renewal Conditioner" standing majestically in the middle of a serene lake surrounded by pine forests and snow-capped mountains in the background, the tube is overgrown with green vines and leaves at its base, two realistic bears standing near the foreground on both sides, rocks and grass on the ground, white flowers blooming around, a hummingbird flying near the top left, other birds soaring across a bright blue sky with scattered clouds, soft sunlight illuminating the scene, magical fantasy atmosphere, hyper-detailed textures, 4K, vertical aspect ratio 4:5.`
@@ -121,6 +128,11 @@ const PromptControls: React.FC<PromptControlsProps> = ({
   const artisticStyles: { label: string; value: ArtisticStyle }[] = Object.entries(t.artisticStyles).map(([value, label]) => ({
       label,
       value: value as ArtisticStyle
+  }));
+
+  const fontStyles: { label: string; value: FontStyle }[] = Object.entries(t.fontStyles).map(([value, label]) => ({
+      label,
+      value: value as FontStyle
   }));
 
   const commonButtonDisabled = isLoading || !isApiConfigured;
@@ -240,12 +252,52 @@ const PromptControls: React.FC<PromptControlsProps> = ({
           className="w-full p-4 pb-6 pr-20 bg-base-200/50 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
           rows={3}
           disabled={commonButtonDisabled}
-          maxLength={maxLength}
+          maxLength={mainPromptMaxLength}
         />
         <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
-          {prompt.length} / {maxLength}
+          {prompt.length} / {mainPromptMaxLength}
         </div>
       </div>
+      
+      {generationMode === 'image' && (
+        <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-base-300">
+            <label htmlFor="text-overlay-input" className="block font-semibold text-center text-content">
+                {t.addTextToImageLabel}
+            </label>
+            <div className="relative">
+                <textarea
+                    id="text-overlay-input"
+                    value={overlayText}
+                    onChange={(e) => setOverlayText(e.target.value)}
+                    placeholder={t.addTextPlaceholder}
+                    className="w-full p-2 pr-20 bg-base-100 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
+                    rows={2}
+                    disabled={commonButtonDisabled}
+                    maxLength={textOverlayMaxLength}
+                />
+                <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
+                    {overlayText.length} / {textOverlayMaxLength}
+                </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <label className="font-semibold text-content whitespace-nowrap">{t.fontStyleLabel}</label>
+                <div className="flex flex-wrap gap-2 p-1 bg-base-100 rounded-lg justify-center">
+                    {fontStyles.map(({ label, value }) => (
+                        <button
+                            key={value}
+                            onClick={() => setFontStyle(value)}
+                            disabled={isLoading}
+                            className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                            fontStyle === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+      )}
 
       {!isApiConfigured && (
           <p className="text-center text-yellow-400 text-sm -mt-2">

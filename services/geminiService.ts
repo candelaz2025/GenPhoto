@@ -1,7 +1,7 @@
 // Fix: Provide the implementation for the Gemini API service.
 // Fix: Replaced non-existent 'ContentPart' type with the correct 'Part' type.
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
-import { UploadedImage, Result, AspectRatio, ArtisticStyle, Language } from '../types';
+import { UploadedImage, Result, AspectRatio, ArtisticStyle, Language, FontStyle } from '../types';
 import { translations } from '../locales/translations';
 
 /**
@@ -46,7 +46,9 @@ export const editImageWithGemini = async (
   images: UploadedImage[],
   aspectRatio: AspectRatio,
   apiKey: string,
-  lang: Language
+  lang: Language,
+  overlayText: string,
+  fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
   if (!apiKey) throw new Error(t.error.apiKey);
@@ -82,7 +84,13 @@ export const editImageWithGemini = async (
   }
 
   // Add aspect ratio instruction to the prompt
-  const fullPrompt = `${finalPrompt}${t.service.aspectRatioInstruction(aspectRatio)}`;
+  let fullPrompt = `${finalPrompt}${t.service.aspectRatioInstruction(aspectRatio)}`;
+
+  // Add text instruction if provided
+  if (overlayText.trim()) {
+      const font = t.fontStyles[fontStyle];
+      fullPrompt += t.service.addTextInstruction(overlayText, font);
+  }
 
   if (fullPrompt.trim()) {
     parts.push({ text: fullPrompt });
@@ -187,7 +195,9 @@ export const generateImageWithImagen = async (
   prompt: string,
   aspectRatio: AspectRatio,
   apiKey: string,
-  lang: Language
+  lang: Language,
+  overlayText: string,
+  fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
   if (!apiKey) throw new Error(t.error.apiKey);
@@ -198,11 +208,19 @@ export const generateImageWithImagen = async (
   }
 
   const model = 'imagen-4.0-generate-001';
+  
+  let fullPrompt = prompt;
+  
+  // Add text instruction if provided
+  if (overlayText.trim()) {
+    const font = t.fontStyles[fontStyle];
+    fullPrompt += t.service.addTextInstruction(overlayText, font);
+  }
 
   try {
     const response = await ai.models.generateImages({
       model: model,
-      prompt: prompt,
+      prompt: fullPrompt,
       config: {
         numberOfImages: 1,
         outputMimeType: 'image/jpeg',

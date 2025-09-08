@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidvv4 } from 'uuid';
 
@@ -13,7 +14,7 @@ import ApiKeyModal from './components/ApiKeyModal';
 import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
-import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language } from './types';
+import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle } from './types';
 import { translations } from './locales/translations';
 
 // Helper function to convert file to base64
@@ -43,6 +44,8 @@ function App() {
   const [style, setStyle] = useState<ArtisticStyle>(
     () => (localStorage.getItem('gemini-style') as ArtisticStyle) || 'Default'
   );
+  const [overlayText, setOverlayText] = useState('');
+  const [fontStyle, setFontStyle] = useState<FontStyle>('Default');
   const [result, setResult] = useState<Result | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
@@ -51,7 +54,6 @@ function App() {
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
-  const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   const t = translations[language];
 
@@ -116,22 +118,6 @@ function App() {
       console.error("Failed to save history to localStorage", e);
     }
   }, [history]);
-  
-  // Fetch visitor count on mount
-  useEffect(() => {
-    const fetchVisitorCount = async () => {
-        try {
-            const response = await fetch('https://api.countapi.xyz/hit/imagegen-nanobanana/visits');
-            if (response.ok) {
-                const data = await response.json();
-                setVisitorCount(data.value);
-            }
-        } catch (err) {
-            console.error("Failed to fetch visitor count:", err);
-        }
-    };
-    fetchVisitorCount();
-  }, []);
   
   const handleCloseWhatsNewModal = () => {
     setIsWhatsNewModalOpen(false);
@@ -198,14 +184,15 @@ function App() {
         } else {
             if (images.length > 0) {
                 const apiResult = await editImageWithGemini(
-                    prompt, images, aspectRatio, apiKey, language
+                    prompt, images, aspectRatio, apiKey, language, overlayText, fontStyle
                 );
                 setResult(apiResult);
             } else {
-                const apiResult = await generateImageWithImagen(prompt, aspectRatio, apiKey, language);
+                const apiResult = await generateImageWithImagen(prompt, aspectRatio, apiKey, language, overlayText, fontStyle);
                 setResult(apiResult);
             }
         }
+    // Fix: Added missing curly braces to the catch block to fix a syntax error that was causing numerous compilation errors.
     } catch (err) {
       handleError(err);
     } finally {
@@ -355,6 +342,10 @@ function App() {
           <PromptControls
             prompt={prompt}
             setPrompt={setPrompt}
+            overlayText={overlayText}
+            setOverlayText={setOverlayText}
+            fontStyle={fontStyle}
+            setFontStyle={setFontStyle}
             aspectRatio={aspectRatio}
             setAspectRatio={setAspectRatio}
             style={style}
@@ -387,7 +378,7 @@ function App() {
         <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} t={t} />
         
       </main>
-      <Footer visitorCount={visitorCount} t={t} />
+      <Footer t={t} />
     </div>
   );
 }

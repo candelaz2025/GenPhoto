@@ -1,4 +1,4 @@
-import { ArtisticStyle } from "../types";
+import { ArtisticStyle, FontStyle } from "../types";
 
 // Type definition for a single prompt example
 export interface PromptExample {
@@ -17,7 +17,6 @@ export interface WhatsNewFeature {
 export interface Translation {
     // Header & Footer
     appName: string;
-    visitorCount: (count: string) => string;
     createdBy: string;
 
     // API Key Section
@@ -51,6 +50,9 @@ export interface Translation {
     aspectRatioSquare: string;
     aspectRatioLandscape: string;
     aspectRatioPortrait: string;
+    addTextToImageLabel: string;
+    addTextPlaceholder: string;
+    fontStyleLabel: string;
     styleSuggestion: (style: string) => string;
     promptPlaceholderImage: (example: string) => string;
     promptPlaceholderVideo: string;
@@ -135,6 +137,7 @@ export interface Translation {
     
     // Artistic Styles & Categories are linked
     artisticStyles: Record<ArtisticStyle, string>;
+    fontStyles: Record<FontStyle, string>;
     promptCategories: Record<string, string>;
     promptExamples: PromptExample[];
     
@@ -161,6 +164,7 @@ export interface Translation {
     service: {
         styleInstruction: (style: string) => string;
         styleInstructionNoPrompt: (style: string) => string;
+        addTextInstruction: (text: string, font: string) => string;
         aspectRatioInstruction: (aspectRatio: string) => string;
         inpaintInstruction: (prompt: string) => string;
         generatePromptInstruction: string;
@@ -173,7 +177,6 @@ export interface Translation {
 export const translations: Record<'th' | 'en' | 'cn', Translation> = {
     th: {
         appName: "Image Gen Nano Banana",
-        visitorCount: (count) => `ผู้เข้าชม: ${count}`,
         createdBy: "สร้างโดย Candelaz Kengza",
         apiKeyLabel: "Google AI API Key",
         apiKeyPlaceholder: "ใส่ API Key ของคุณที่นี่...",
@@ -201,6 +204,9 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         aspectRatioSquare: "สี่เหลี่ยม",
         aspectRatioLandscape: "แนวนอน",
         aspectRatioPortrait: "แนวตั้ง",
+        addTextToImageLabel: "เพิ่มข้อความลงในรูปภาพ (optional)",
+        addTextPlaceholder: "ใส่ข้อความที่นี่...",
+        fontStyleLabel: "สไตล์ฟอนต์",
         styleSuggestion: (style) => `คำแนะนำสำหรับสไตล์ ${style}:`,
         promptPlaceholderImage: (example) => `ลองพิมพ์: "${example}"`,
         promptPlaceholderVideo: "อธิบายวิดีโอที่ต้องการสร้าง เช่น 'แมวอวกาศกำลังขับยานอวกาศ'",
@@ -277,6 +283,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             Cartoon: 'การ์ตูน', Surreal: 'เหนือจริง', Cyberpunk: 'ไซเบอร์พังก์', Vintage: 'วินเทจ',
             Fantasy: 'แฟนตาซี', 'Sci-Fi': 'ไซไฟ', Abstract: 'นามธรรม',
         },
+        fontStyles: {
+            Default: 'ค่าเริ่มต้น', Serif: 'เซริฟ', 'Sans-serif': 'ซานเซริฟ', Script: 'ตัวเขียน',
+            Display: 'ดิสเพลย์', Handwriting: 'ลายมือ', Futuristic: 'อนาคต',
+        },
         promptCategories: {
             popular: "ยอดนิยม", "3d": "3D & เรนเดอร์", photo: "สมจริง & ภาพถ่าย",
             fantasy: "แฟนตาซี & ไซไฟ", art: "ศิลปะ & ภาพวาด", character: "ตัวละคร & ผู้คน",
@@ -324,6 +334,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         service: {
             styleInstruction: (style) => `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`,
             styleInstructionNoPrompt: (style) => `สร้างสรรค์ภาพที่อัปโหลดขึ้นมาใหม่ในสไตล์ ${style}`,
+            addTextInstruction: (text, font) => `\n\nคำสั่งข้อความสำคัญ: กรุณาใส่ข้อความต่อไปนี้ลงในภาพให้ชัดเจน: "${text}"${font !== 'ค่าเริ่มต้น' ? ` โดยใช้ฟอนต์สไตล์ ${font}` : ''} ตรวจสอบให้แน่ใจว่าข้อความอ่านง่ายและผสมผสานเข้ากับฉากอย่างลงตัว`,
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
             inpaintInstruction: (prompt) => `ใช้รูปภาพต้นฉบับและรูปภาพมาสก์สีขาวดำเป็นข้อมูลอ้างอิง ในพื้นที่ที่ระบายด้วยสีขาวบนมาสก์ ให้สร้างภาพขึ้นมาใหม่ตามคำสั่งต่อไปนี้: "${prompt}" พยายามผสมผสานส่วนที่สร้างขึ้นใหม่ให้เข้ากับภาพต้นฉบับอย่างแนบเนียนที่สุด`,
             generatePromptInstruction: "วิเคราะห์รูปภาพเหล่านี้และช่วยสร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขหรือต่อยอดรูปภาพนี้เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ",
@@ -334,7 +345,6 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
     },
     en: {
         appName: "Image Gen Nano Banana",
-        visitorCount: (count) => `Visitors: ${count}`,
         createdBy: "Created by Candelaz Kengza",
         apiKeyLabel: "Google AI API Key",
         apiKeyPlaceholder: "Enter your API Key here...",
@@ -362,6 +372,9 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         aspectRatioSquare: "Square",
         aspectRatioLandscape: "Landscape",
         aspectRatioPortrait: "Portrait",
+        addTextToImageLabel: "Add Text to Image (Optional)",
+        addTextPlaceholder: "Enter text here...",
+        fontStyleLabel: "Font Style",
         styleSuggestion: (style) => `Suggestions for ${style} style:`,
         promptPlaceholderImage: (example) => `Try: "${example}"`,
         promptPlaceholderVideo: "Describe the video to generate, e.g., 'An astronaut cat driving a spaceship'",
@@ -438,6 +451,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             Cartoon: 'Cartoon', Surreal: 'Surreal', Cyberpunk: 'Cyberpunk', Vintage: 'Vintage',
             Fantasy: 'Fantasy', 'Sci-Fi': 'Sci-Fi', Abstract: 'Abstract',
         },
+        fontStyles: {
+            Default: 'Default', Serif: 'Serif', 'Sans-serif': 'Sans-serif', Script: 'Script',
+            Display: 'Display', Handwriting: 'Handwriting', Futuristic: 'Futuristic',
+        },
         promptCategories: {
             popular: "Popular", "3d": "3D & Render", photo: "Realistic & Photo",
             fantasy: "Fantasy & Sci-Fi", art: "Art & Painting", character: "Character & People",
@@ -485,6 +502,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         service: {
             styleInstruction: (style) => `\n\nAdditional instruction: please generate this image in a ${style} style`,
             styleInstructionNoPrompt: (style) => `Recreate the uploaded image(s) in a ${style} style`,
+            addTextInstruction: (text, font) => `\n\nImportant Text Instruction: Please embed the following text clearly into the image: "${text}"${font !== 'Default' ? `. Use a ${font} font style if possible.` : ''} Make sure the text is legible and well-integrated into the scene.`,
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
             inpaintInstruction: (prompt) => `Using the original image and the black-and-white mask image as references, regenerate the area marked in white on the mask according to the following instruction: "${prompt}". Blend the newly generated content seamlessly with the original image.`,
             generatePromptInstruction: "Analyze these images and help generate a creative prompt in English for editing or extending them, focusing on imagining new and interesting scenes or styles.",
@@ -495,7 +513,6 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
     },
     cn: {
         appName: "图像生成器 Nano Banana",
-        visitorCount: (count) => `访客: ${count}`,
         createdBy: "由 Candelaz Kengza 创建",
         apiKeyLabel: "Google AI API 密钥",
         apiKeyPlaceholder: "在此处输入您的 API 密钥...",
@@ -523,6 +540,9 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         aspectRatioSquare: "方形",
         aspectRatioLandscape: "横向",
         aspectRatioPortrait: "纵向",
+        addTextToImageLabel: "向图像添加文本（可选）",
+        addTextPlaceholder: "在此处输入文本...",
+        fontStyleLabel: "字体样式",
         styleSuggestion: (style) => `${style} 风格建议:`,
         promptPlaceholderImage: (example) => `试试: "${example}"`,
         promptPlaceholderVideo: "描述要生成的视频，例如“一只宇航员猫驾驶宇宙飞船”",
@@ -599,6 +619,10 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             Cartoon: '卡通', Surreal: '超现实', Cyberpunk: '赛博朋克', Vintage: '复古',
             Fantasy: '奇幻', 'Sci-Fi': '科幻', Abstract: '抽象',
         },
+        fontStyles: {
+            Default: '默认', Serif: '衬线体', 'Sans-serif': '无衬线体', Script: '手写体',
+            Display: '展示体', Handwriting: '手迹', Futuristic: '未来感',
+        },
         promptCategories: {
             popular: "热门", "3d": "3D 和渲染", photo: "写实和照片",
             fantasy: "奇幻和科幻", art: "艺术和绘画", character: "角色和人物",
@@ -646,6 +670,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         service: {
             styleInstruction: (style) => `\n\n附加说明：请以 ${style} 风格生成此图像`,
             styleInstructionNoPrompt: (style) => `以 ${style} 风格重新创建上传的图像`,
+            addTextInstruction: (text, font) => `\n\n重要文本说明：请将以下文本清晰地嵌入到图像中：“${text}”${font !== '默认' ? `。如果可能，请使用 ${font} 字体样式。` : ''}确保文本清晰易读并与场景完美融合。`,
             aspectRatioInstruction: (aspectRatio) => `\n\n重要：以 ${aspectRatio} 的宽高比生成图像。`,
             inpaintInstruction: (prompt) => `使用原始图像和黑白蒙版图像作为参考，根据以下说明重新生成蒙版上标记为白色的区域：“${prompt}”。将新生成的内容与原始图像无缝融合。`,
             generatePromptInstruction: "分析这些图像，并帮助用中文生成一个创意提示，用于编辑或扩展它们，重点是想象新的有趣的场景或风格。",

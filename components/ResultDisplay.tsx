@@ -185,27 +185,40 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
   
   const handleDownload = async () => {
     if (!currentImage) return;
+    
+    // iOS handles downloads differently. Opening the image in a new tab
+    // is the most reliable way to allow users to save it to their photo album.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
     try {
-      const response = await fetch(currentImage);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const fileExtension = blob.type.split('/')[1] || 'png';
-      link.download = `gemini-art-${Date.now()}.${fileExtension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+        const response = await fetch(currentImage);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        if (isIOS) {
+            // On iOS, we open the blob URL in a new tab. The user can then
+            // use the share sheet or long-press to save the image.
+            window.open(url, '_blank');
+            // We cannot revoke the URL immediately as the new tab needs it.
+            // Browser will handle cleanup when the tab is closed.
+        } else {
+            // For other OS (Android, Desktop), creating a link with a download
+            // attribute works as expected.
+            const link = document.createElement('a');
+            link.href = url;
+            const fileExtension = blob.type.split('/')[1] || 'png';
+            link.download = `gemini-art-${Date.now()}.${fileExtension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            // We can revoke the URL right away as the download has been initiated.
+            window.URL.revokeObjectURL(url);
+        }
     } catch (error) {
-        console.error('Download failed, falling back to original method.', error);
-        // Fallback to original method just in case
-        const link = document.createElement('a');
-        link.href = currentImage;
-        link.download = `gemini-art-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        console.error('Download failed, falling back to opening data URI.', error);
+        // Fallback for any error: open the original data URI in a new tab.
+        // This is less efficient but a good fallback.
+        window.open(currentImage, '_blank');
     }
   };
 
@@ -434,7 +447,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
   );
 
   const renderImageViewer = () => (
-    <div className="w-full md:w-1/2 relative">
+    <div className="w-full md:w-1/2 relative group">
         <div
             ref={imageDisplayContainerRef}
             className={`w-full aspect-square rounded-lg shadow-lg overflow-hidden transition-colors border ${scale > 1 ? 'cursor-grabbing border-brand-primary' : 'cursor-zoom-in border-transparent'}`}
@@ -443,13 +456,6 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
             <img src={currentImage!} alt="Generated result" className="w-full h-full object-contain transition-transform duration-100 ease-out"
                 style={{ transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`, willChange: 'transform', cursor: 'inherit' }}
             />
-             {/* Desktop-only hover buttons */}
-            <div className="absolute top-3 right-3 hidden md:flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <button onClick={handleEnterEditMode} className="bg-gray-800/60 text-white p-2 rounded-full transition-all hover:bg-gray-700 transform hover:scale-110 shadow-lg" aria-label={t.editTooltip} title={t.editTooltip}><EditIcon className="w-5 h-5" /></button>
-                <button onClick={handleAdd} className="bg-brand-primary/80 text-white p-2 rounded-full transition-all hover:bg-brand-secondary transform hover:scale-110 shadow-lg" aria-label={t.saveResultTooltip} title={t.saveResultTooltip}><ReuseIcon className="w-5 h-5" /></button>
-                <button onClick={handleDownload} className="bg-green-600/80 text-white p-2 rounded-full transition-all hover:bg-green-500 transform hover:scale-110 shadow-lg" aria-label={t.downloadImageTooltip} title={t.downloadImageTooltip}><DownloadIcon className="w-5 h-5" /></button>
-                {navigator.share && (<button onClick={handleShare} className="bg-blue-500/80 text-white p-2 rounded-full transition-all hover:bg-blue-400 transform hover:scale-110 shadow-lg" aria-label={t.shareImageTooltip} title={t.shareImageTooltip}><ShareIcon className="w-5 h-5" /></button>)}
-            </div>
             <div className={`absolute top-3 left-3 flex flex-col space-y-2 transition-opacity z-10 ${scale > 1 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                 <button onClick={handleZoomIn} className="bg-gray-800/60 text-white p-2 rounded-full hover:bg-gray-700 transform hover:scale-110 shadow-lg" title={t.zoomInTooltip}><ZoomInIcon className="w-5 h-5" /></button>
                 <button onClick={handleZoomOut} className="bg-gray-800/60 text-white p-2 rounded-full hover:bg-gray-700 transform hover:scale-110 shadow-lg" title={t.zoomOutTooltip}><ZoomOutIcon className="w-5 h-5" /></button>
@@ -457,8 +463,8 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
             </div>
         </div>
         
-        {/* Mobile-only action bar */}
-        <div className="flex md:hidden justify-center items-center gap-4 w-full pt-4">
+        {/* Always-visible action bar */}
+        <div className="flex justify-center items-center gap-4 w-full pt-4">
             <button onClick={handleEnterEditMode} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content">
                 <EditIcon className="w-6 h-6" />
                 <span className="text-xs mt-1">{t.editTooltip}</span>
