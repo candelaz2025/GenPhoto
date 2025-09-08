@@ -259,25 +259,3 @@ export const generatePromptFromImages = async (
     throw new Error(handleApiError(error));
   }
 };
-
-export const generateRandomCreativePrompt = async (apiKey: string): Promise<string> => {
-    if (!apiKey) throw new Error('API Key is required.');
-    const ai = new GoogleGenAI({ apiKey });
-    const model = 'gemini-2.5-flash';
-
-    const prompt = "สร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขรูปภาพด้วย AI เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ ไม่ต้องอิงจากรูปภาพใดๆ แค่เป็นไอเดียเจ๋งๆ สั้นๆ กระชับ";
-
-    try {
-        const result = await ai.models.generateContent({
-            model: model,
-            contents: prompt,
-        });
-        const text = result.text;
-        if (!text) {
-            throw new Error('AI did not return a prompt.');
-        }
-        return text.trim();
-    } catch (error) {
-        throw new Error(handleApiError(error));
-    }
-};

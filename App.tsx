@@ -9,8 +9,9 @@ import PromptControls from './components/PromptControls';
 import ResultDisplay from './components/ResultDisplay';
 import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
-import ApiKeyModal from './components/ApiKeyModal'; // Import the new modal
-import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, generatePromptFromImages, generateRandomCreativePrompt } from './services/geminiService';
+import ApiKeyModal from './components/ApiKeyModal';
+import PromptExamplesModal from './components/PromptExamplesModal'; // Import the new modal
+import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, generatePromptFromImages } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle } from './types';
 
 // Helper function to convert file to base64
@@ -35,7 +36,8 @@ function App() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false); // State for the modal
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false); // State for the examples modal
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
 
 
@@ -120,6 +122,19 @@ function App() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
   
+  /**
+   * Centralized error handler for API calls. It logs the full error
+   * and sets a user-friendly error message in the state.
+   * @param err The error caught from the API call.
+   * @param defaultMessage A fallback message if the error is not a standard Error instance.
+   */
+  const handleError = (err: unknown, defaultMessage: string) => {
+    console.error(err);
+    // The service layer already formats the error message to be user-friendly.
+    // We just need to extract it. If it's not a standard Error, use the fallback.
+    setError(err instanceof Error ? err.message : defaultMessage);
+  };
+
   const handleSubmit = async () => {
     if (!apiKey) {
       setError('กรุณาใส่ API Key ของคุณก่อนใช้งาน');
@@ -158,27 +173,9 @@ function App() {
             }
         }
     } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      handleError(err, 'เกิดข้อผิดพลาดที่ไม่คาดคิด');
     } finally {
       setLoadingMode(null);
-    }
-  };
-
-  const handleRandomPrompt = async () => {
-    if (!apiKey) {
-      setError('กรุณาใส่ API Key ของคุณก่อนใช้งาน');
-      return;
-    }
-    setError(null);
-    try {
-       const newPrompt = images.length > 0
-        ? await generatePromptFromImages(images, apiKey)
-        : await generateRandomCreativePrompt(apiKey);
-      setPrompt(newPrompt);
-    } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการสร้างคำสั่ง');
     }
   };
 
@@ -224,11 +221,20 @@ function App() {
     }
   }
 
+  const handleSelectPrompt = (selectedPrompt: string) => {
+    setPrompt(selectedPrompt);
+    setIsExamplesModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-base-100 text-content font-sans">
       {loadingMode && <Loader mode={loadingMode} />}
       <ApiKeyModal isOpen={isApiKeyModalOpen} onClose={() => setIsApiKeyModalOpen(false)} />
+      <PromptExamplesModal 
+        isOpen={isExamplesModalOpen} 
+        onClose={() => setIsExamplesModalOpen(false)}
+        onSelectPrompt={handleSelectPrompt}
+      />
       <Header />
       <main className="container mx-auto p-4 space-y-8">
         <div className="max-w-xl mx-auto p-4 bg-base-200/50 rounded-lg">
@@ -289,9 +295,10 @@ function App() {
             generationMode={generationMode}
             setGenerationMode={setGenerationMode}
             onSubmit={handleSubmit}
-            onRandomPrompt={handleRandomPrompt}
+            onOpenExamples={() => setIsExamplesModalOpen(true)}
             isLoading={!!loadingMode}
             isApiConfigured={!!apiKey}
+            imageCount={images.length}
           />
           
           {error && <div className="text-red-500 bg-red-100 p-3 rounded-lg text-center">{error}</div>}
