@@ -78,11 +78,11 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ t, language, setLanguage }) => {
   return (
     <header className="bg-base-200/50 backdrop-blur-sm sticky top-0 z-10">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-2 sm:px-4 py-4 flex items-center justify-between">
         <div className="flex-1 flex justify-start"></div> {/* Spacer */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           <ZenitsuSeventhFormIcon className="w-10 h-10" aria-label="Zenitsu pixel art icon" />
-          <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-secondary text-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-secondary text-center">
             {t.appName}
           </h1>
         </div>

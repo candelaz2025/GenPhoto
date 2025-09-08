@@ -101,6 +101,12 @@ export const BrightnessIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =
     </svg>
 );
 
+export const PaintBrushIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.472-2.472a.375.375 0 00-.53-.53L10.92 14.64m1.12-2.24l.53-.53m-2.24 1.12l-2.24-2.24.53-.53m-2.472 2.472L5.353 7.853a.375.375 0 00-.53.53l2.472 2.472m-1.12 2.24l-.53.53m2.24-1.12l2.24 2.24-.53.53m2.472-2.472l-5.877-5.877a2.652 2.652 0 00-3.75 0L2 11.875l5.877 5.877L11.42 15.17z" />
+  </svg>
+);
+
 export const CheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />

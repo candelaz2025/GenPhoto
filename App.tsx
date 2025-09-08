@@ -11,7 +11,7 @@ import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
 import ApiKeyModal from './components/ApiKeyModal';
 import PromptExamplesModal from './components/PromptExamplesModal';
-import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo } from './services/geminiService';
+import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language } from './types';
 import { translations } from './locales/translations';
 
@@ -200,6 +200,39 @@ function App() {
       setLoadingMode(null);
     }
   };
+  
+  const handleRegenerate = async (originalImage: string, maskImage: string, inpaintPrompt: string) => {
+    if (!apiKey) {
+      setError(t.error.apiKey);
+      return Promise.reject(new Error(t.error.apiKey));
+    }
+    
+    setLoadingMode('image');
+    setError(null);
+    
+    try {
+        const [header, data] = originalImage.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+
+        const [maskHeader, maskData] = maskImage.split(',');
+        const maskMimeType = maskHeader.match(/:(.*?);/)?.[1] || 'image/png';
+        
+        const apiResult = await inpaintImageWithGemini(
+            inpaintPrompt,
+            { base64: data, mimeType },
+            { base64: maskData, mimeType: maskMimeType },
+            apiKey,
+            language
+        );
+        setResult(apiResult);
+        return apiResult;
+    } catch (err) {
+      handleError(err);
+      throw err;
+    } finally {
+      setLoadingMode(null);
+    }
+  }
 
   const handleAddToHistory = (res: Result) => {
     if (res.image && !history.some(item => item.imageUrl === res.image)) {
@@ -331,7 +364,7 @@ function App() {
             </div>
           )}
 
-          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} t={t} />}
+          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} t={t} onRegenerate={handleRegenerate} />}
         </div>
         
         <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} t={t} />

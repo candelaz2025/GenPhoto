@@ -3,7 +3,7 @@ import Cropper, { Area } from 'react-easy-crop';
 import { Result } from '../types';
 import { 
     ReuseIcon, DownloadIcon, ShareIcon, ZoomInIcon, ZoomOutIcon, ResetZoomIcon, 
-    EditIcon, CropIcon, RotateCcwIcon, BrightnessIcon, CheckIcon, XIcon 
+    EditIcon, CropIcon, RotateCcwIcon, BrightnessIcon, CheckIcon, XIcon, PaintBrushIcon
 } from './IconComponents';
 import { Translation } from '../locales/translations';
 
@@ -11,6 +11,7 @@ interface ResultDisplayProps {
   result: Result | null;
   onAddToHistory: (result: Result) => void;
   t: Translation;
+  onRegenerate: (originalImage: string, maskImage: string, inpaintPrompt: string) => Promise<Result>;
 }
 
 /**
@@ -81,25 +82,33 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
     image.src = url;
   });
 
-const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t }) => {
+const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t, onRegenerate }) => {
   // Pan/Zoom state for viewing
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const imageDisplayContainerRef = useRef<HTMLDivElement>(null);
   
   // State for the displayed image (original or edited)
   const [currentImage, setCurrentImage] = useState<string | null>(null);
 
   // Editing state
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTool, setActiveTool] = useState<'crop' | 'brightness' | null>(null);
+  const [activeTool, setActiveTool] = useState<'crop' | 'brightness' | 'mask' | null>(null);
   const [tempRotation, setTempRotation] = useState(0);
   const [tempBrightness, setTempBrightness] = useState(100);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [cropZoom, setCropZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessingEdit, setIsProcessingEdit] = useState(false);
+
+  // In-painting/Masking state
+  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [brushSize, setBrushSize] = useState(40);
+  const [inpaintPrompt, setInpaintPrompt] = useState("");
+  const [maskError, setMaskError] = useState<string | null>(null);
+  const [isMaskEmpty, setIsMaskEmpty] = useState(true);
 
   useEffect(() => {
     if (result?.image) {
@@ -143,6 +152,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
     setCroppedAreaPixels(null);
     setCrop({ x: 0, y: 0 });
     setCropZoom(1);
+    setInpaintPrompt("");
   };
   
   const handleCancelEditMode = () => {
@@ -200,11 +210,111 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
   const handleZoomIn = () => setScale(s => Math.min(s + 0.2, 5));
   const handleZoomOut = () => { const newScale = Math.max(scale - 0.2, 1); setScale(newScale); if (newScale <= 1) handleResetZoom(); };
 
+  // In-painting Logic
+  const getCoords = (e: MouseEvent<HTMLCanvasElement>): { x: number; y: number } => {
+    const canvas = maskCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+        y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+    };
+  };
+
+  const startDrawing = (e: MouseEvent<HTMLCanvasElement>) => {
+    const ctx = maskCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    setIsDrawing(true);
+    setIsMaskEmpty(false);
+    const { x, y } = getCoords(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const draw = (e: MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const ctx = maskCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    const { x, y } = getCoords(e);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+  const stopDrawing = () => {
+    const ctx = maskCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    ctx.closePath();
+    setIsDrawing(false);
+  };
+
+  const clearMask = () => {
+    const canvas = maskCanvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        setIsMaskEmpty(true);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (isMaskEmpty) {
+        setMaskError(t.error.maskEmpty);
+        setTimeout(() => setMaskError(null), 3000);
+        return;
+    }
+    if (!inpaintPrompt.trim()) {
+        setMaskError(t.error.promptOrImage);
+        setTimeout(() => setMaskError(null), 3000);
+        return;
+    }
+
+    const maskDataUrl = maskCanvasRef.current?.toDataURL('image/png');
+    if (!currentImage || !maskDataUrl) return;
+
+    setIsProcessingEdit(true);
+    try {
+        const newResult = await onRegenerate(currentImage, maskDataUrl, inpaintPrompt);
+        if (newResult?.image) {
+          setCurrentImage(newResult.image);
+        }
+        setIsEditing(false); // Exit edit mode on success
+    } catch (e) {
+        console.error("Regeneration failed", e);
+        // Error is displayed globally by App.tsx
+    } finally {
+        setIsProcessingEdit(false);
+    }
+  };
+  
+  // Effect to set up canvas
+  useEffect(() => {
+    const canvas = maskCanvasRef.current;
+    const container = imageDisplayContainerRef.current;
+    if (activeTool === 'mask' && canvas && container) {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.scale(dpr, dpr);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+            setIsMaskEmpty(true);
+        }
+    }
+  }, [activeTool, brushSize]);
+
+
   if (!result) return null;
   
   const renderImageEditor = () => (
-    <div className="w-full md:w-1/2 relative group">
-        <div className="w-full aspect-square rounded-lg shadow-lg overflow-hidden bg-base-100 relative">
+    <div className="w-full md:w-1/2 flex flex-col gap-4">
+        <div ref={imageDisplayContainerRef} className="w-full aspect-square rounded-lg shadow-lg overflow-hidden bg-base-100 relative">
             {activeTool === 'crop' ? (
                  <Cropper
                     image={currentImage ?? undefined}
@@ -216,6 +326,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
                     onZoomChange={setCropZoom}
                 />
             ) : (
+              <>
                 <img 
                     src={currentImage ?? undefined} 
                     alt="Generated result" 
@@ -226,22 +337,48 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
                         willChange: 'transform, filter',
                     }}
                 />
+                {activeTool === 'mask' && (
+                  <canvas
+                    ref={maskCanvasRef}
+                    className="absolute inset-0 w-full h-full opacity-70 cursor-crosshair"
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                  />
+                )}
+              </>
             )}
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 rounded-b-lg flex flex-col gap-2">
+        <div className="bg-base-300/50 p-3 rounded-lg flex flex-col gap-4">
            {activeTool === 'brightness' && (
-             <div className="flex items-center gap-2 px-2">
-                <span className="text-xs text-white">Brightness</span>
+             <div className="flex items-center gap-2 px-2 animate-fade-in">
+                <span className="text-xs text-white">{t.brightness}</span>
                  <input type="range" min="50" max="150" value={tempBrightness} onChange={(e) => setTempBrightness(Number(e.target.value))} className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm" />
              </div>
            )}
-            <div className="flex justify-around items-center">
-                <button onClick={() => setActiveTool('crop')} className={`p-2 rounded-full ${activeTool === 'crop' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title="Crop"><CropIcon className="w-5 h-5 text-white" /></button>
-                <button onClick={handleRotate} className="p-2 rounded-full hover:bg-base-300" title="Rotate"><RotateCcwIcon className="w-5 h-5 text-white" /></button>
-                <button onClick={() => setActiveTool('brightness')} className={`p-2 rounded-full ${activeTool === 'brightness' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title="Brightness"><BrightnessIcon className="w-5 h-5 text-white" /></button>
+           {activeTool === 'mask' && (
+            <div className="flex flex-col gap-3 animate-fade-in">
+                <div className="flex items-center gap-3">
+                    <label className="text-sm font-medium whitespace-nowrap">{t.brushSizeLabel}</label>
+                    <input type="range" min="10" max="100" value={brushSize} onChange={e => setBrushSize(Number(e.target.value))} className="w-full" />
+                    <button onClick={clearMask} className="text-sm px-3 py-1 bg-base-100 rounded-md hover:bg-base-200">{t.clearMaskButton}</button>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">{t.inpaintPromptLabel}</label>
+                    <textarea value={inpaintPrompt} onChange={e => setInpaintPrompt(e.target.value)} placeholder={t.promptPlaceholderDefault} rows={2} className="w-full p-2 bg-base-100 rounded-md text-sm focus:ring-brand-primary focus:outline-none focus:ring-2" />
+                </div>
+                {maskError && <p className="text-red-400 text-xs text-center">{maskError}</p>}
+            </div>
+           )}
+            <div className="flex justify-around items-center border-t border-base-300 pt-3">
+                <button onClick={() => setActiveTool('mask')} className={`p-2 rounded-full ${activeTool === 'mask' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.inpaintToolTooltip}><PaintBrushIcon className="w-5 h-5 text-white" /></button>
+                <button onClick={() => setActiveTool('crop')} className={`p-2 rounded-full ${activeTool === 'crop' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.cropTooltip}><CropIcon className="w-5 h-5 text-white" /></button>
+                <button onClick={handleRotate} className="p-2 rounded-full hover:bg-base-300" title={t.rotateTooltip}><RotateCcwIcon className="w-5 h-5 text-white" /></button>
+                <button onClick={() => setActiveTool('brightness')} className={`p-2 rounded-full ${activeTool === 'brightness' ? 'bg-brand-primary' : 'hover:bg-base-300'}`} title={t.brightnessTooltip}><BrightnessIcon className="w-5 h-5 text-white" /></button>
                 <div className="w-px h-6 bg-gray-600" />
-                <button onClick={handleCancelEditMode} className="p-2 rounded-full hover:bg-red-500/50" title="Cancel"><XIcon className="w-6 h-6 text-red-400" /></button>
-                <button onClick={handleApplyEdits} disabled={isProcessingEdit} className="p-2 rounded-full hover:bg-green-500/50 disabled:cursor-not-allowed" title="Apply Edits">
+                <button onClick={handleCancelEditMode} className="p-2 rounded-full hover:bg-red-500/50" title={t.cancelTooltip}><XIcon className="w-6 h-6 text-red-400" /></button>
+                <button onClick={activeTool === 'mask' ? handleRegenerate : handleApplyEdits} disabled={isProcessingEdit} className="p-2 rounded-full hover:bg-green-500/50 disabled:cursor-not-allowed" title={activeTool === 'mask' ? t.regenerateButton : t.applyChangesTooltip}>
                     {isProcessingEdit ? <div className="w-6 h-6 border-2 border-t-transparent border-white rounded-full animate-spin" /> : <CheckIcon className="w-6 h-6 text-green-400" />}
                 </button>
             </div>
@@ -252,7 +389,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
   const renderImageViewer = () => (
     <div className="w-full md:w-1/2 relative group">
         <div
-            ref={imageContainerRef}
+            ref={imageDisplayContainerRef}
             className={`w-full aspect-square rounded-lg shadow-lg overflow-hidden transition-colors border ${scale > 1 ? 'cursor-grabbing border-brand-primary' : 'cursor-zoom-in border-transparent'}`}
             onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onMouseMove={handleMouseMove} onWheel={handleWheel}
         >

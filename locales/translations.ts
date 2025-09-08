@@ -63,6 +63,20 @@ export interface Translation {
     unsupportedShare: string;
     downloadVideoButton: string;
     videoUnsupported: string;
+    
+    // Image Editor
+    editTooltip: string;
+    cropTooltip: string;
+    rotateTooltip: string;
+    brightness: string;
+    brightnessTooltip: string;
+    cancelTooltip: string;
+    applyChangesTooltip: string;
+    regenerateButton: string;
+    inpaintPromptLabel: string;
+    brushSizeLabel: string;
+    clearMaskButton: string;
+    inpaintToolTooltip: string;
 
     // History
     historyTitle: string;
@@ -114,6 +128,7 @@ export interface Translation {
         maxImages: string;
         fileProcessing: string;
         historyReuse: string;
+        maskEmpty: string;
         invalidKey: string;
         rateLimit: string;
         network: string;
@@ -129,7 +144,11 @@ export interface Translation {
         styleInstruction: (style: string) => string;
         styleInstructionNoPrompt: (style: string) => string;
         aspectRatioInstruction: (aspectRatio: string) => string;
+        inpaintInstruction: (prompt: string) => string;
         generatePromptInstruction: string;
+        combineInstructionWithPrompt: (prompt: string) => string;
+        combineInstructionNoPrompt: string;
+        editSingleImageWithPrompt: (prompt: string) => string;
     }
 }
 
@@ -180,6 +199,18 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         unsupportedShare: "เบราว์เซอร์ของคุณไม่รองรับการแชร์ หรือไม่มีรูปภาพให้แชร์",
         downloadVideoButton: "ดาวน์โหลดวิดีโอ",
         videoUnsupported: "เบราว์เซอร์ของคุณไม่รองรับวิดีโอแท็ก",
+        editTooltip: "แก้ไขรูปภาพ",
+        cropTooltip: "ครอบตัด",
+        rotateTooltip: "หมุน",
+        brightness: "ความสว่าง",
+        brightnessTooltip: "ปรับความสว่าง",
+        cancelTooltip: "ยกเลิก",
+        applyChangesTooltip: "ใช้การเปลี่ยนแปลง",
+        regenerateButton: "สร้างใหม่อีกครั้ง",
+        inpaintPromptLabel: "อธิบายสิ่งที่จะเปลี่ยนแปลงในพื้นที่ที่เลือก:",
+        brushSizeLabel: "ขนาดแปรง",
+        clearMaskButton: "ล้างพื้นที่",
+        inpaintToolTooltip: "แก้ไขเฉพาะจุด (Inpaint)",
         historyTitle: "ประวัติการสร้าง",
         clearHistoryButton: "ล้างประวัติ",
         reuseImageTooltip: "นำรูปภาพนี้มาใช้ใหม่",
@@ -248,6 +279,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             maxImages: "คุณสามารถอัปโหลดได้สูงสุด 10 ภาพ",
             fileProcessing: "เกิดข้อผิดพลาดในการประมวลผลไฟล์ภาพ",
             historyReuse: "ไม่สามารถนำรูปภาพจากประวัติกลับมาใช้ใหม่ได้",
+            maskEmpty: "กรุณาระบายสีพื้นที่ที่ต้องการแก้ไขก่อน",
             invalidKey: 'API Key ไม่ถูกต้องหรือไม่ได้รับอนุญาต โปรดตรวจสอบและบันทึกคีย์ของคุณอีกครั้ง',
             rateLimit: 'ใช้งานเกินขีดจำกัดแล้ว โปรดรอสักครู่แล้วลองอีกครั้งในภายหลัง',
             network: 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ',
@@ -261,7 +293,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             styleInstruction: (style) => `\n\nคำสั่งเพิ่มเติม: ช่วยสร้างภาพนี้ในสไตล์ ${style}`,
             styleInstructionNoPrompt: (style) => `สร้างสรรค์ภาพที่อัปโหลดขึ้นมาใหม่ในสไตล์ ${style}`,
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
+            inpaintInstruction: (prompt) => `ใช้รูปภาพต้นฉบับและรูปภาพมาสก์สีขาวดำเป็นข้อมูลอ้างอิง ในพื้นที่ที่ระบายด้วยสีขาวบนมาสก์ ให้สร้างภาพขึ้นมาใหม่ตามคำสั่งต่อไปนี้: "${prompt}" พยายามผสมผสานส่วนที่สร้างขึ้นใหม่ให้เข้ากับภาพต้นฉบับอย่างแนบเนียนที่สุด`,
             generatePromptInstruction: "วิเคราะห์รูปภาพเหล่านี้และช่วยสร้าง prompt ที่สร้างสรรค์สำหรับแก้ไขหรือต่อยอดรูปภาพนี้เป็นภาษาไทย โดยเน้นไปที่การจินตนาการถึงฉากหรือสไตล์ใหม่ๆ ที่น่าสนใจ",
+            combineInstructionWithPrompt: (prompt) => `รวมองค์ประกอบจากรูปภาพทั้งหมดที่อัปโหลดเข้าด้วยกันอย่างสร้างสรรค์ตามคำสั่งนี้: "${prompt}"`,
+            combineInstructionNoPrompt: `รวมองค์ประกอบจากรูปภาพทั้งหมดที่อัปโหลดเข้าด้วยกันอย่างสร้างสรรค์เพื่อสร้างเป็นภาพใหม่ที่สวยงามและลงตัว`,
+            editSingleImageWithPrompt: (prompt) => `อ้างอิงจากภาพที่อัปโหลด, ${prompt}`,
         }
     },
     en: {
@@ -310,6 +346,18 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         unsupportedShare: "Your browser does not support sharing, or there is no image to share.",
         downloadVideoButton: "Download Video",
         videoUnsupported: "Your browser does not support the video tag.",
+        editTooltip: "Edit Image",
+        cropTooltip: "Crop",
+        rotateTooltip: "Rotate",
+        brightness: "Brightness",
+        brightnessTooltip: "Adjust Brightness",
+        cancelTooltip: "Cancel",
+        applyChangesTooltip: "Apply Changes",
+        regenerateButton: "Regenerate",
+        inpaintPromptLabel: "Describe what to change in the selected area:",
+        brushSizeLabel: "Brush Size",
+        clearMaskButton: "Clear Mask",
+        inpaintToolTooltip: "Inpaint Tool",
         historyTitle: "History",
         clearHistoryButton: "Clear History",
         reuseImageTooltip: "Reuse this image",
@@ -378,6 +426,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             maxImages: "You can upload a maximum of 10 images",
             fileProcessing: "An error occurred while processing the image file",
             historyReuse: "Could not reuse the image from history",
+            maskEmpty: "Please paint an area on the image to edit first",
             invalidKey: 'API Key is not valid or authorized. Please check and save your key again.',
             rateLimit: 'You have exceeded your quota. Please wait a moment and try again later.',
             network: 'A network connection error occurred. Please check your internet connection.',
@@ -391,7 +440,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             styleInstruction: (style) => `\n\nAdditional instruction: please generate this image in a ${style} style`,
             styleInstructionNoPrompt: (style) => `Recreate the uploaded image(s) in a ${style} style`,
             aspectRatioInstruction: (aspectRatio) => `\n\nImportant: Generate the image with a ${aspectRatio} aspect ratio.`,
+            inpaintInstruction: (prompt) => `Using the original image and the black-and-white mask image as references, regenerate the area marked in white on the mask according to the following instruction: "${prompt}". Blend the newly generated content seamlessly with the original image.`,
             generatePromptInstruction: "Analyze these images and help generate a creative prompt in English for editing or extending them, focusing on imagining new and interesting scenes or styles.",
+            combineInstructionWithPrompt: (prompt) => `Instruction: Creatively combine elements from all uploaded images according to this prompt: "${prompt}"`,
+            combineInstructionNoPrompt: `Instruction: Creatively combine elements from all uploaded images into a new, cohesive, and beautiful single image.`,
+            editSingleImageWithPrompt: (prompt) => `Using the uploaded image as a reference, ${prompt}`,
         }
     },
     cn: {
@@ -440,6 +493,18 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         unsupportedShare: "您的浏览器不支持分享，或者没有可分享的图片。",
         downloadVideoButton: "下载视频",
         videoUnsupported: "您的浏览器不支持 video 标签。",
+        editTooltip: "编辑图片",
+        cropTooltip: "裁剪",
+        rotateTooltip: "旋转",
+        brightness: "亮度",
+        brightnessTooltip: "调整亮度",
+        cancelTooltip: "取消",
+        applyChangesTooltip: "应用更改",
+        regenerateButton: "重新生成",
+        inpaintPromptLabel: "描述要在所选区域中更改的内容：",
+        brushSizeLabel: "画笔大小",
+        clearMaskButton: "清除蒙版",
+        inpaintToolTooltip: "局部重绘工具",
         historyTitle: "历史记录",
         clearHistoryButton: "清除历史记录",
         reuseImageTooltip: "重复使用此图片",
@@ -508,6 +573,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             maxImages: "您最多可以上传 10 张图片",
             fileProcessing: "处理图像文件时出错",
             historyReuse: "无法从历史记录中重复使用图像",
+            maskEmpty: "请先在图像上绘制要编辑的区域",
             invalidKey: 'API 密钥无效或未授权。请检查并重新保存您的密钥。',
             rateLimit: '您已超出配额。请稍等片刻再试。',
             network: '发生网络连接错误。请检查您的网络连接。',
@@ -521,7 +587,11 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
             styleInstruction: (style) => `\n\n附加说明：请以 ${style} 风格生成此图像`,
             styleInstructionNoPrompt: (style) => `以 ${style} 风格重新创建上传的图像`,
             aspectRatioInstruction: (aspectRatio) => `\n\n重要：以 ${aspectRatio} 的宽高比生成图像。`,
+            inpaintInstruction: (prompt) => `使用原始图像和黑白蒙版图像作为参考，根据以下说明重新生成蒙版上标记为白色的区域：“${prompt}”。将新生成的内容与原始图像无缝融合。`,
             generatePromptInstruction: "分析这些图像，并帮助用中文生成一个创意提示，用于编辑或扩展它们，重点是想象新的有趣的场景或风格。",
+            combineInstructionWithPrompt: (prompt) => `指令：根据以下提示，创造性地结合所有上传图像中的元素：“${prompt}”`,
+            combineInstructionNoPrompt: `指令：创造性地结合所有上传图像中的元素，创作出一张和谐美观的新图像。`,
+            editSingleImageWithPrompt: (prompt) => `参考上传的图片，${prompt}`,
         }
     },
 };

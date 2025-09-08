@@ -70,13 +70,27 @@ export const editImageWithGemini = async (
   }
 
   let finalPrompt = prompt;
+
+  // Construct prompt based on number of images
+  if (images.length >= 2) {
+      if (prompt.trim()) {
+          finalPrompt = t.service.combineInstructionWithPrompt(prompt);
+      } else {
+          finalPrompt = t.service.combineInstructionNoPrompt;
+      }
+  } else if (images.length === 1 && prompt.trim()) {
+      finalPrompt = t.service.editSingleImageWithPrompt(prompt);
+  }
+
+  // Handle style instruction
   if (style !== 'Default') {
-    const styleInstruction = t.service.styleInstruction(t.artisticStyles[style]);
-    if (prompt) {
-      finalPrompt += styleInstruction;
-    } else {
-      finalPrompt = t.service.styleInstructionNoPrompt(t.artisticStyles[style]);
-    }
+      const styleInstruction = t.service.styleInstruction(t.artisticStyles[style]);
+      if (finalPrompt.trim()) {
+          finalPrompt += styleInstruction;
+      } else {
+          // This case is for 1 image, no prompt, but a style is selected.
+          finalPrompt = t.service.styleInstructionNoPrompt(t.artisticStyles[style]);
+      }
   }
 
   // Add aspect ratio instruction to the prompt
@@ -120,6 +134,61 @@ export const editImageWithGemini = async (
         throw new Error(t.error.emptyResponse);
     }
 
+    return finalResult;
+  } catch (error) {
+    throw new Error(handleApiError(error, lang));
+  }
+};
+
+export const inpaintImageWithGemini = async (
+  prompt: string,
+  originalImage: { base64: string; mimeType: string },
+  maskImage: { base64: string; mimeType: string },
+  apiKey: string,
+  lang: Language
+): Promise<Result> => {
+  const t = translations[lang];
+  if (!apiKey) throw new Error(t.error.apiKey);
+  const ai = new GoogleGenAI({ apiKey });
+  const model = 'gemini-2.5-flash-image-preview';
+  
+  const fullPrompt = t.service.inpaintInstruction(prompt);
+
+  const parts: Part[] = [
+    { inlineData: { data: originalImage.base64, mimeType: originalImage.mimeType } },
+    { inlineData: { data: maskImage.base64, mimeType: maskImage.mimeType } },
+    { text: fullPrompt },
+  ];
+
+  try {
+    const result: GenerateContentResponse = await ai.models.generateContent({
+      model: model,
+      contents: { parts: parts },
+      config: {
+        responseModalities: [Modality.IMAGE, Modality.TEXT],
+      },
+    });
+
+    const finalResult: Result = {};
+
+    if (result.candidates && result.candidates.length > 0) {
+        for (const part of result.candidates[0].content.parts) {
+          if (part.text) {
+            finalResult.text = (finalResult.text || "") + part.text;
+          } else if (part.inlineData) {
+            const base64ImageBytes: string = part.inlineData.data;
+            const mimeType = part.inlineData.mimeType;
+            finalResult.image = `data:${mimeType};base64,${base64ImageBytes}`;
+          }
+        }
+    } else {
+      throw new Error(t.error.emptyResponse);
+    }
+
+    if (!finalResult.image) {
+      throw new Error(t.error.emptyResponse);
+    }
+    
     return finalResult;
   } catch (error) {
     throw new Error(handleApiError(error, lang));
