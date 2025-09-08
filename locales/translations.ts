@@ -259,7 +259,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         },
         apiKeyModalNote: "หมายเหตุ: API key ของคุณจะถูกบันทึกไว้ในเบราว์เซอร์ของคุณเท่านั้นและจะไม่ถูกส่งไปที่อื่น.",
         whatsNewTitle: "มีอะไรใหม่บ้าง?",
-        whatsNewDate: "อัปเดตล่าสุด: 28 กรกฎาคม 2024",
+        whatsNewDate: "อัปเดตล่าสุด: 8 กันยายน 2025",
         whatsNewFeatures: [
             { icon: 'EditIcon', title: 'เครื่องมือแก้ไขภาพขั้นสูง', description: 'ตอนนี้คุณสามารถครอบตัด, หมุน, และปรับความสว่างของภาพที่สร้างขึ้นได้โดยตรงในแอป' },
             { icon: 'PaintBrushIcon', title: 'แก้ไขภาพเฉพาะจุด (In-painting)', description: 'ระบายสีบนพื้นที่ที่ต้องการแก้ไขและใช้ AI เติมสิ่งที่ต้องการเข้าไปได้อย่างแนบเนียน' },
@@ -420,7 +420,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         },
         apiKeyModalNote: "Note: Your API key is stored only in your browser and is not sent anywhere else.",
         whatsNewTitle: "What's New?",
-        whatsNewDate: "Last Updated: July 28, 2024",
+        whatsNewDate: "Last Updated: September 8, 2025",
         whatsNewFeatures: [
             { icon: 'EditIcon', title: 'Advanced Image Editor', description: 'You can now crop, rotate, and adjust the brightness of your generated images directly in the app.' },
             { icon: 'PaintBrushIcon', title: 'In-painting Tool', description: 'Mask a specific area of your image and use the AI to seamlessly fill it with anything you can imagine.' },
@@ -581,7 +581,7 @@ export const translations: Record<'th' | 'en' | 'cn', Translation> = {
         },
         apiKeyModalNote: "注意：您的 API 密钥仅存储在您的浏览器中，不会发送到任何其他地方。",
         whatsNewTitle: "新功能",
-        whatsNewDate: "最后更新：2024年7月28日",
+        whatsNewDate: "最后更新：2025年9月8日",
         whatsNewFeatures: [
             { icon: 'EditIcon', title: '高级图像编辑器', description: '您现在可以直接在应用中裁剪、旋转和调整生成图像的亮度。' },
             { icon: 'PaintBrushIcon', title: '局部重绘工具', description: '在图像的特定区域上绘制蒙版，然后使用 AI 将您想象的任何内容无缝填充进去。' },

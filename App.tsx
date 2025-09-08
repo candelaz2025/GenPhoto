@@ -26,7 +26,7 @@ const fileToBase64 = (file: File): Promise<string> =>
   });
 
 const DEFAULT_API_KEY = 'P2AMML5VGC4XQVYASFHA73CFAU';
-const CURRENT_APP_VERSION = '2024-07-28'; // Update this date for new features to trigger the modal
+const CURRENT_APP_VERSION = '2025-09-08'; // Update this date for new features to trigger the modal
 
 function App() {
   const [images, setImages] = useState<UploadedImage[]>([]);
