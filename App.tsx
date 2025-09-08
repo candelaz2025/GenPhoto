@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidvv4 } from 'uuid';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -30,8 +31,12 @@ function App() {
   const [apiKey, setApiKey] = useState<string>('');
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
-  const [style, setStyle] = useState<ArtisticStyle>('Default');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
+    () => (localStorage.getItem('gemini-aspect-ratio') as AspectRatio) || '1:1'
+  );
+  const [style, setStyle] = useState<ArtisticStyle>(
+    () => (localStorage.getItem('gemini-style') as ArtisticStyle) || 'Default'
+  );
   const [result, setResult] = useState<Result | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
@@ -44,14 +49,12 @@ function App() {
   // Load API key from local storage on mount, or use the default
   useEffect(() => {
     const savedApiKey = localStorage.getItem('gemini-api-key');
-    const defaultApiKey = 'P2AMML5VGC4XQVYASFHA73CFAU';
-
     if (savedApiKey) {
       setApiKey(savedApiKey);
       setApiKeyInput(savedApiKey);
-    } else {
-      setApiKey(defaultApiKey);
-      setApiKeyInput(defaultApiKey);
+    } else if (process.env.API_KEY) {
+      setApiKey(process.env.API_KEY);
+      setApiKeyInput(process.env.API_KEY);
     }
   }, []);
 
@@ -63,6 +66,17 @@ function App() {
       localStorage.removeItem('gemini-api-key');
     }
   }, [apiKey]);
+  
+  // Save aspect ratio preference to local storage
+  useEffect(() => {
+    localStorage.setItem('gemini-aspect-ratio', aspectRatio);
+  }, [aspectRatio]);
+
+  // Save style preference to local storage
+  useEffect(() => {
+    localStorage.setItem('gemini-style', style);
+  }, [style]);
+
 
   // Load history from local storage on mount
   useEffect(() => {
@@ -103,7 +117,8 @@ function App() {
             try {
                 const base64 = await fileToBase64(file);
                 newImages.push({
-                    id: uuidv4(),
+                    // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
+                    id: uuidvv4(),
                     file,
                     previewUrl: URL.createObjectURL(file),
                     base64,
@@ -182,7 +197,8 @@ function App() {
   const handleAddToHistory = (res: Result) => {
     if (res.image && !history.some(item => item.imageUrl === res.image)) {
         const newHistoryItem: HistoryItem = {
-            id: uuidv4(),
+            // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
+            id: uuidvv4(),
             imageUrl: res.image,
             text: res.text,
         };
@@ -206,7 +222,8 @@ function App() {
         
         const base64 = await fileToBase64(file);
         const newImage: UploadedImage = {
-            id: uuidv4(),
+            // Fix: Corrected typo from `uuidv4` to `uuidvv4` to match the import alias.
+            id: uuidvv4(),
             file,
             previewUrl: URL.createObjectURL(file),
             base64,
