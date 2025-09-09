@@ -262,8 +262,8 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
     return {
-        x: ((e.clientX - rect.left) / rect.width) * canvas.width,
-        y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
     };
   };
 
@@ -296,8 +296,10 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
     const canvas = maskCanvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (canvas && ctx) {
+        const rect = canvas.getBoundingClientRect();
+        // Use rect dimensions for clearing because context is scaled
         ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, rect.width, rect.height);
         setIsMaskEmpty(true);
     }
   };
@@ -349,7 +351,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.fillStyle = 'black';
-            ctx.fillRect(0,0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, rect.width, rect.height);
             setIsMaskEmpty(true);
         }
     }
