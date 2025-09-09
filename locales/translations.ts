@@ -1,3 +1,4 @@
+
 // Fix: Provide a full implementation for the translations module.
 // This resolves module import errors across the application and fixes
 // downstream type errors in components that consume the translation object.
@@ -115,6 +116,12 @@ export interface Translation {
   whatsNewDate: string;
   whatsNewFeatures: WhatsNewFeature[];
   whatsNewCloseButton: string;
+  watermarkSettings: string;
+  uploadWatermark: string;
+  removeWatermark: string;
+  applyWatermark: string;
+  watermarkDesc: string;
+  watermarkDisclaimer: string;
   error: {
     default: string;
     apiKey: string;
@@ -131,6 +138,7 @@ export interface Translation {
     apiError: (message: string) => string;
     videoFinishedNoLink: string;
     maskEmpty: string;
+    errorWatermarkUpload: string;
   };
   service: {
     combineInstructionWithPrompt: (prompt: string) => string;
@@ -301,6 +309,12 @@ const en: Translation = {
     { icon: 'SparklesIcon', title: 'Prompt Inspiration', description: 'Stuck for ideas? Click the "Get Inspired" button for a collection of creative prompts to get you started.' },
   ],
   whatsNewCloseButton: "Let's Go!",
+  watermarkSettings: "Watermark Settings",
+  uploadWatermark: "Upload Watermark",
+  removeWatermark: "Remove",
+  applyWatermark: "Apply Watermark",
+  watermarkDesc: "Upload a PNG to use as a watermark.",
+  watermarkDisclaimer: "Watermarking is only available for image generation.",
   error: {
     default: 'An unknown error occurred. Please try again.',
     apiKey: 'API key is required. Please enter it above.',
@@ -317,6 +331,7 @@ const en: Translation = {
     apiError: (message) => `An API error occurred: ${message}`,
     videoFinishedNoLink: 'Video generation finished, but no download link was provided.',
     maskEmpty: 'Please draw a mask on the image before regenerating.',
+    errorWatermarkUpload: "Failed to upload watermark. Please select a valid image file.",
   },
   service: {
     combineInstructionWithPrompt: (prompt) => `Combine the uploaded images based on this instruction: "${prompt}".`,
@@ -485,6 +500,12 @@ const th: Translation = {
     { icon: 'SparklesIcon', title: 'แรงบันดาลใจจากคำสั่ง', description: 'คิดไอเดียไม่ออก? คลิกปุ่ม "ค้นหาแรงบันดาลใจ" เพื่อดูชุดคำสั่งสร้างสรรค์ที่จะช่วยให้คุณเริ่มต้นได้' },
   ],
   whatsNewCloseButton: "ไปกันเลย!",
+  watermarkSettings: "ตั้งค่าลายน้ำ",
+  uploadWatermark: "อัปโหลดลายน้ำ",
+  removeWatermark: "ลบ",
+  applyWatermark: "ใช้ลายน้ำ",
+  watermarkDesc: "อัปโหลดไฟล์ PNG เพื่อใช้เป็นลายน้ำ",
+  watermarkDisclaimer: "การใส่ลายน้ำใช้ได้กับการสร้างรูปภาพเท่านั้น",
   error: {
     default: 'เกิดข้อผิดพลาดที่ไม่รู้จัก โปรดลองอีกครั้ง',
     apiKey: 'จำเป็นต้องมี API key โปรดป้อนด้านบน',
@@ -501,6 +522,7 @@ const th: Translation = {
     apiError: (message) => `เกิดข้อผิดพลาดจาก API: ${message}`,
     videoFinishedNoLink: 'การสร้างวิดีโอเสร็จสิ้น แต่ไม่มีลิงก์สำหรับดาวน์โหลด',
     maskEmpty: 'กรุณาวาดมาสก์บนรูปภาพก่อนสร้างใหม่',
+    errorWatermarkUpload: "ไม่สามารถอัปโหลดลายน้ำได้ กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง",
   },
   service: {
     combineInstructionWithPrompt: (prompt) => `รวมรูปภาพที่อัปโหลดตามคำสั่งนี้: "${prompt}"`,
@@ -669,6 +691,12 @@ const cn: Translation = {
     { icon: 'SparklesIcon', title: '提示灵感', description: '没有灵感？点击“获取灵感”按钮，获取一系列创意提示，帮助您开始创作。' },
   ],
   whatsNewCloseButton: "开始吧！",
+  watermarkSettings: "水印设置",
+  uploadWatermark: "上传水印",
+  removeWatermark: "移除",
+  applyWatermark: "应用水印",
+  watermarkDesc: "上传 PNG 文件作为水印使用。",
+  watermarkDisclaimer: "水印功能仅适用于图像生成。",
   error: {
     default: '发生未知错误。请重试。',
     apiKey: '需要 API 密钥。请在上方输入。',
@@ -685,6 +713,7 @@ const cn: Translation = {
     apiError: (message) => `发生 API 错误：${message}`,
     videoFinishedNoLink: '视频生成完成，但未提供下载链接。',
     maskEmpty: '请在重新生成前在图像上绘制蒙版。',
+    errorWatermarkUpload: "水印上传失败。请选择有效的图像文件。",
   },
   service: {
     combineInstructionWithPrompt: (prompt) => `根据此说明组合上传的图像：“${prompt}”。`,

@@ -13,6 +13,7 @@ import Loader from './components/Loader';
 import ApiKeyModal from './components/ApiKeyModal';
 import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
+import WatermarkControls from './components/WatermarkControls';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle } from './types';
 import { translations, PromptExample } from './locales/translations';
@@ -55,6 +56,8 @@ function App() {
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
+  const [watermark, setWatermark] = useState<string | null>(null);
+  const [isWatermarkEnabled, setIsWatermarkEnabled] = useState<boolean>(false);
 
   const t = translations[language];
 
@@ -119,6 +122,23 @@ function App() {
       console.error("Failed to save history to localStorage", e);
     }
   }, [history]);
+
+  // Load/Save watermark from/to local storage
+  useEffect(() => {
+    const savedWatermark = localStorage.getItem('gemini-watermark-image');
+    if (savedWatermark) setWatermark(savedWatermark);
+    const savedEnabled = localStorage.getItem('gemini-watermark-enabled');
+    setIsWatermarkEnabled(savedEnabled === 'true');
+  }, []);
+
+  useEffect(() => {
+    if (watermark) localStorage.setItem('gemini-watermark-image', watermark);
+    else localStorage.removeItem('gemini-watermark-image');
+  }, [watermark]);
+  
+  useEffect(() => {
+    localStorage.setItem('gemini-watermark-enabled', String(isWatermarkEnabled));
+  }, [isWatermarkEnabled]);
   
   const handleCloseWhatsNewModal = () => {
     setIsWhatsNewModalOpen(false);
@@ -165,6 +185,74 @@ function App() {
     setError(err instanceof Error ? err.message : t.error.default);
   };
 
+  const handleWatermarkUpload = async (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            setWatermark(reader.result as string);
+            setIsWatermarkEnabled(true); // Enable by default on new upload
+        };
+        reader.onerror = (error) => { throw error; };
+      } catch (err) {
+        console.error("Error converting watermark file to base64", err);
+        setError(t.error.errorWatermarkUpload);
+      }
+    }
+  };
+
+  const handleRemoveWatermark = () => {
+    setWatermark(null);
+    setIsWatermarkEnabled(false);
+  };
+
+  const handleToggleWatermark = (enabled: boolean) => {
+    setIsWatermarkEnabled(enabled);
+  };
+
+  const applyWatermark = (baseImageSrc: string, watermarkImageSrc: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const baseImage = new Image();
+        baseImage.crossOrigin = 'anonymous';
+        baseImage.onload = () => {
+            const watermarkImage = new Image();
+            watermarkImage.crossOrigin = 'anonymous';
+            watermarkImage.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = baseImage.naturalWidth;
+                canvas.height = baseImage.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return reject(new Error('Could not get canvas context'));
+                }
+
+                // Draw the base image
+                ctx.drawImage(baseImage, 0, 0);
+
+                // Calculate watermark size and position
+                const watermarkScaleRatio = 0.15; // Watermark width will be 15% of base image width
+                const watermarkWidth = canvas.width * watermarkScaleRatio;
+                const watermarkHeight = watermarkImage.naturalHeight * (watermarkWidth / watermarkImage.naturalWidth);
+                const padding = canvas.width * 0.02; // 2% padding from edges
+
+                const x = canvas.width - watermarkWidth - padding;
+                const y = canvas.height - watermarkHeight - padding;
+
+                // Draw the watermark with opacity
+                ctx.globalAlpha = 0.75;
+                ctx.drawImage(watermarkImage, x, y, watermarkWidth, watermarkHeight);
+
+                resolve(canvas.toDataURL('image/png'));
+            };
+            watermarkImage.onerror = (err) => reject(err);
+            watermarkImage.src = watermarkImageSrc;
+        };
+        baseImage.onerror = (err) => reject(err);
+        baseImage.src = baseImageSrc;
+    });
+  };
+
   const handleSubmit = async () => {
     if (!apiKey) {
       setError(t.error.apiKey);
@@ -182,20 +270,33 @@ function App() {
     const fullPrompt = promptTitle ? `${promptTitle}: ${prompt}` : prompt;
 
     try {
+        let apiResult: Result;
         if (generationMode === 'video') {
-            const apiResult = await generateVideoWithVeo(fullPrompt, images, apiKey, language);
-            setResult(apiResult);
+            apiResult = await generateVideoWithVeo(fullPrompt, images, apiKey, language);
         } else {
             if (images.length > 0) {
-                const apiResult = await editImageWithGemini(
+                apiResult = await editImageWithGemini(
                     fullPrompt, images, aspectRatio, apiKey, language, overlayText, fontStyle
                 );
-                setResult(apiResult);
             } else {
-                const apiResult = await generateImageWithImagen(fullPrompt, aspectRatio, apiKey, language, overlayText, fontStyle);
-                setResult(apiResult);
+                apiResult = await generateImageWithImagen(fullPrompt, aspectRatio, apiKey, language, overlayText, fontStyle);
             }
         }
+
+        let finalResult = apiResult;
+
+        if (generationMode === 'image' && isWatermarkEnabled && watermark && apiResult.image) {
+            try {
+                const watermarkedImage = await applyWatermark(apiResult.image, watermark);
+                finalResult = { ...apiResult, image: watermarkedImage };
+            } catch (err) {
+                console.error("Failed to apply watermark, showing original image.", err);
+                setError(t.error.apiError("Could not apply watermark, showing original image."));
+            }
+        }
+        
+        setResult(finalResult);
+
     // Fix: Added missing curly braces to the catch block to fix a syntax error that was causing numerous compilation errors.
     } catch (err) {
       handleError(err);
@@ -227,8 +328,20 @@ function App() {
             apiKey,
             language
         );
-        setResult(apiResult);
-        return apiResult;
+
+        let finalResult = apiResult;
+        if (isWatermarkEnabled && watermark && apiResult.image) {
+             try {
+                const watermarkedImage = await applyWatermark(apiResult.image, watermark);
+                finalResult = { ...apiResult, image: watermarkedImage };
+            } catch (err) {
+                console.error("Failed to apply watermark, showing original image.", err);
+                setError(t.error.apiError("Could not apply watermark, showing original image."));
+            }
+        }
+
+        setResult(finalResult);
+        return finalResult;
     } catch (err) {
       handleError(err);
       throw err;
@@ -334,6 +447,16 @@ function App() {
             </button>
           </div>
         </div>
+
+        <WatermarkControls
+          watermark={watermark}
+          isWatermarkEnabled={isWatermarkEnabled}
+          generationMode={generationMode}
+          onWatermarkUpload={handleWatermarkUpload}
+          onRemoveWatermark={handleRemoveWatermark}
+          onToggleWatermark={handleToggleWatermark}
+          t={t}
+        />
 
         <div className="max-w-4xl mx-auto flex flex-col items-center space-y-6">
           <p className="text-center text-lg">
