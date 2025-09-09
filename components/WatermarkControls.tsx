@@ -41,7 +41,7 @@ const WatermarkControls: React.FC<WatermarkControlsProps> = ({
   const isVideoMode = generationMode === 'video';
 
   return (
-    <div className="max-w-xl mx-auto p-4 bg-base-200/50 rounded-lg space-y-3">
+    <div className="max-w-2xl mx-auto p-4 bg-base-200/50 rounded-lg space-y-3">
       <h3 className="font-semibold text-center">{t.watermarkSettings}</h3>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { UploadIcon } from './IconComponents';
 import { Translation } from '../locales/translations';
@@ -75,7 +76,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onFileChange, imageCount,
     )
   }
 
-  const uploaderClasses = `w-full p-8 border-2 rounded-xl text-center cursor-pointer transition-all duration-300 transform ${
+  const uploaderClasses = `w-full p-6 border-2 rounded-xl text-center cursor-pointer transition-all duration-300 transform ${
     isDraggingOver 
       ? 'border-solid border-brand-primary bg-brand-primary/10 scale-105' 
       : 'border-dashed border-base-300 hover:border-brand-secondary hover:bg-base-200/50'

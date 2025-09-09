@@ -1,4 +1,5 @@
 
+
 // Fix: Provide a full implementation for the translations module.
 // This resolves module import errors across the application and fixes
 // downstream type errors in components that consume the translation object.
@@ -20,14 +21,6 @@ export interface Translation {
   appName: string;
   createdBy: string;
   mainDescription: string;
-  apiKeyLabel: string;
-  apiKeyPlaceholder:string;
-  saveButton: string;
-  saveSuccess: string;
-  apiKeyInfo: string;
-  getApiKeyLink: string;
-  apiKeyNote: string;
-  getApiKeyButton: string;
   uploaderTitle: string;
   uploaderSubtitle: string;
   uploaderDropMessage: string;
@@ -59,7 +52,6 @@ export interface Translation {
   addTextToImageLabel: string;
   addTextPlaceholder: string;
   fontStyleLabel: string;
-  apiNotConfigured: string;
   processingButton: string;
   generateImageButton: string;
   generateVideoButton: string;
@@ -95,16 +87,6 @@ export interface Translation {
   historyTitle: string;
   clearHistoryButton: string;
   reuseImageTooltip: string;
-  apiKeyModalTitle: string;
-  apiKeyModalDescription: string;
-  apiKeyModalSteps: {
-    step1: string;
-    step2: string;
-    step3: string;
-    step4: string;
-    step5: string;
-  };
-  apiKeyModalNote: string;
   promptExamplesTitle: string;
   promptSearchPlaceholder: (category: string) => string;
   selectPromptButton: string;
@@ -122,9 +104,19 @@ export interface Translation {
   applyWatermark: string;
   watermarkDesc: string;
   watermarkDisclaimer: string;
+  // Fix: Add missing translation keys for ApiKeyModal to resolve type errors.
+  apiKeyModalTitle: string;
+  apiKeyModalDescription: string;
+  apiKeyModalSteps: {
+    step1: string;
+    step2: string;
+    step3: string;
+    step4: string;
+    step5: string;
+  };
+  apiKeyModalNote: string;
   error: {
     default: string;
-    apiKey: string;
     promptOrImage: string;
     fileProcessing: string;
     maxImages: string;
@@ -158,14 +150,6 @@ const en: Translation = {
   appName: 'AI Image & Video Studio',
   createdBy: 'Created with ❤️ by Gemini',
   mainDescription: 'Create amazing images and videos with AI. Start by uploading an image, writing a prompt, or both!',
-  apiKeyLabel: 'Your Google AI Studio API Key',
-  apiKeyPlaceholder: 'Enter your API key here...',
-  saveButton: 'Save',
-  saveSuccess: 'API Key saved successfully!',
-  apiKeyInfo: 'Your API key is stored locally in your browser. Get yours from',
-  getApiKeyLink: 'Google AI Studio',
-  apiKeyNote: 'and paste it above.',
-  getApiKeyButton: "Where do I get an API Key?",
   uploaderTitle: 'Upload Your Images',
   uploaderSubtitle: 'Drag & drop or click to select files. (Max 10)',
   uploaderDropMessage: 'Drop your files to upload!',
@@ -197,7 +181,6 @@ const en: Translation = {
   addTextToImageLabel: 'Add Text to Image (Optional)',
   addTextPlaceholder: 'e.g., Summer Sale!',
   fontStyleLabel: 'Font',
-  apiNotConfigured: 'API Key is not configured. Please enter your key above to enable generation.',
   processingButton: 'Processing...',
   generateImageButton: 'Generate Image',
   generateVideoButton: 'Generate Video',
@@ -265,16 +248,6 @@ const en: Translation = {
   historyTitle: 'History',
   clearHistoryButton: 'Clear History',
   reuseImageTooltip: 'Reuse this image',
-  apiKeyModalTitle: 'How to get a Google AI API Key',
-  apiKeyModalDescription: 'To use this application, you need a free API key from Google AI Studio. Follow these steps:',
-  apiKeyModalSteps: {
-    step1: 'Go to',
-    step2: 'If you are not already signed in, sign in with your Google account.',
-    step3: 'Click on the "Create API key" button.',
-    step4: 'Copy the generated API key.',
-    step5: 'Come back here and paste the key into the input field at the top of the page.',
-  },
-  apiKeyModalNote: 'Note: Your API key is sensitive. Keep it safe and do not share it publicly.',
   promptExamplesTitle: 'Inspiring Prompts',
   promptSearchPlaceholder: (category) => `Search in ${category}...`,
   selectPromptButton: 'Use Prompt',
@@ -315,9 +288,19 @@ const en: Translation = {
   applyWatermark: "Apply Watermark",
   watermarkDesc: "Upload a PNG to use as a watermark.",
   watermarkDisclaimer: "Watermarking is only available for image generation.",
+  // Fix: Add missing translations for ApiKeyModal.
+  apiKeyModalTitle: 'Setup Your API Key',
+  apiKeyModalDescription: 'To use this application, you need a Google AI API key. Follow these steps:',
+  apiKeyModalSteps: {
+    step1: 'Go to',
+    step2: 'Click "Create API key in new project".',
+    step3: 'Copy your generated API key.',
+    step4: 'Create a file named `.env.local` in the project root.',
+    step5: 'In the `.env.local` file, add `API_KEY=\'YOUR_API_KEY\'`, replacing `YOUR_API_KEY` with your copied key.'
+  },
+  apiKeyModalNote: 'Note: Your API key is for personal use. Keep it secret and do not commit it to version control.',
   error: {
     default: 'An unknown error occurred. Please try again.',
-    apiKey: 'API key is required. Please enter it above.',
     promptOrImage: 'Please provide a prompt or upload an image.',
     fileProcessing: 'An error occurred while processing the file.',
     maxImages: 'You can upload a maximum of 10 images.',
@@ -349,14 +332,6 @@ const th: Translation = {
   appName: 'AI สตูดิโอรูปภาพและวิดีโอ',
   createdBy: 'สร้างสรรค์ด้วย ❤️ โดย Gemini',
   mainDescription: 'สร้างรูปภาพและวิดีโอสุดทึ่งด้วย AI เริ่มต้นด้วยการอัปโหลดรูปภาพ เขียนคำสั่ง หรือทั้งสองอย่าง!',
-  apiKeyLabel: 'API Key ของคุณจาก Google AI Studio',
-  apiKeyPlaceholder: 'ป้อน API key ของคุณที่นี่...',
-  saveButton: 'บันทึก',
-  saveSuccess: 'บันทึก API Key สำเร็จ!',
-  apiKeyInfo: 'API key ของคุณจะถูกเก็บไว้ในเบราว์เซอร์ของคุณ รับคีย์ได้จาก',
-  getApiKeyLink: 'Google AI Studio',
-  apiKeyNote: 'แล้วนำมาวางด้านบน',
-  getApiKeyButton: "ฉันจะหา API Key ได้จากที่ไหน?",
   uploaderTitle: 'อัปโหลดรูปภาพของคุณ',
   uploaderSubtitle: 'ลากและวาง หรือคลิกเพื่อเลือกไฟล์ (สูงสุด 10 ไฟล์)',
   uploaderDropMessage: 'วางไฟล์ของคุณเพื่ออัปโหลด!',
@@ -388,7 +363,6 @@ const th: Translation = {
   addTextToImageLabel: 'เพิ่มข้อความลงในรูปภาพ (optional)',
   addTextPlaceholder: 'เช่น ลดราคาท้าลมร้อน!',
   fontStyleLabel: 'ฟอนต์',
-  apiNotConfigured: 'ยังไม่ได้ตั้งค่า API Key กรุณาป้อนคีย์ของคุณด้านบนเพื่อเปิดใช้งานการสร้าง',
   processingButton: 'กำลังประมวลผล...',
   generateImageButton: 'สร้างรูปภาพ',
   generateVideoButton: 'สร้างวิดีโอ',
@@ -456,16 +430,6 @@ const th: Translation = {
   historyTitle: 'ประวัติ',
   clearHistoryButton: 'ล้างประวัติ',
   reuseImageTooltip: 'ใช้รูปภาพนี้อีกครั้ง',
-  apiKeyModalTitle: 'วิธีรับ Google AI API Key',
-  apiKeyModalDescription: 'ในการใช้แอปพลิเคชันนี้ คุณต้องมี API key ฟรีจาก Google AI Studio ทำตามขั้นตอนต่อไปนี้:',
-  apiKeyModalSteps: {
-    step1: 'ไปที่',
-    step2: 'หากคุณยังไม่ได้ลงชื่อเข้าใช้ ให้ลงชื่อเข้าใช้ด้วยบัญชี Google ของคุณ',
-    step3: 'คลิกที่ปุ่ม "Create API key"',
-    step4: 'คัดลอก API key ที่สร้างขึ้น',
-    step5: 'กลับมาที่นี่และวางคีย์ลงในช่องป้อนข้อมูลที่ด้านบนของหน้า',
-  },
-  apiKeyModalNote: 'หมายเหตุ: API key ของคุณเป็นข้อมูลที่ละเอียดอ่อน โปรดเก็บไว้อย่างปลอดภัยและอย่าเปิดเผยต่อสาธารณะ',
   promptExamplesTitle: 'คำสั่งสร้างแรงบันดาลใจ',
   promptSearchPlaceholder: (category) => `ค้นหาใน ${category}...`,
   selectPromptButton: 'ใช้คำสั่งนี้',
@@ -506,9 +470,19 @@ const th: Translation = {
   applyWatermark: "ใช้ลายน้ำ",
   watermarkDesc: "อัปโหลดไฟล์ PNG เพื่อใช้เป็นลายน้ำ",
   watermarkDisclaimer: "การใส่ลายน้ำใช้ได้กับการสร้างรูปภาพเท่านั้น",
+  // Fix: Add missing translations for ApiKeyModal.
+  apiKeyModalTitle: 'ตั้งค่า API Key ของคุณ',
+  apiKeyModalDescription: 'ในการใช้งานแอปพลิเคชันนี้ คุณต้องมี Google AI API key ทำตามขั้นตอนต่อไปนี้:',
+  apiKeyModalSteps: {
+    step1: 'ไปที่',
+    step2: 'คลิก "สร้าง API key ในโปรเจกต์ใหม่"',
+    step3: 'คัดลอก API key ที่สร้างขึ้นใหม่',
+    step4: 'สร้างไฟล์ชื่อ `.env.local` ในไดเรกทอรีรากของโปรเจกต์',
+    step5: 'ในไฟล์ `.env.local` เพิ่ม `API_KEY=\'YOUR_API_KEY\'` โดยแทนที่ `YOUR_API_KEY` ด้วยคีย์ที่คุณคัดลอกมา'
+  },
+  apiKeyModalNote: 'หมายเหตุ: API key ของคุณมีไว้สำหรับใช้งานส่วนตัว โปรดเก็บเป็นความลับและอย่าคอมมิตเข้าสู่ version control',
   error: {
     default: 'เกิดข้อผิดพลาดที่ไม่รู้จัก โปรดลองอีกครั้ง',
-    apiKey: 'จำเป็นต้องมี API key โปรดป้อนด้านบน',
     promptOrImage: 'กรุณาป้อนคำสั่งหรืออัปโหลดรูปภาพ',
     fileProcessing: 'เกิดข้อผิดพลาดขณะประมวลผลไฟล์',
     maxImages: 'คุณสามารถอัปโหลดรูปภาพได้สูงสุด 10 รูป',
@@ -540,14 +514,6 @@ const cn: Translation = {
   appName: 'AI 图像与视频工作室',
   createdBy: '由 Gemini ❤️ 创作',
   mainDescription: '使用 AI 创作令人惊叹的图像和视频。通过上传图像、编写提示或两者兼而有之来开始！',
-  apiKeyLabel: '您的 Google AI Studio API 密钥',
-  apiKeyPlaceholder: '在此处输入您的 API 密钥...',
-  saveButton: '保存',
-  saveSuccess: 'API 密钥已成功保存！',
-  apiKeyInfo: '您的 API 密钥存储在您本地的浏览器中。请从',
-  getApiKeyLink: 'Google AI Studio',
-  apiKeyNote: '获取并粘贴在上方。',
-  getApiKeyButton: "我从哪里获取 API 密钥？",
   uploaderTitle: '上传您的图片',
   uploaderSubtitle: '拖放或点击以选择文件（最多 10 个）',
   uploaderDropMessage: '在此处放下文件即可上传！',
@@ -579,7 +545,6 @@ const cn: Translation = {
   addTextToImageLabel: '向图像添加文本 (可选)',
   addTextPlaceholder: '例如：夏日大甩卖！',
   fontStyleLabel: '字体',
-  apiNotConfigured: '未配置 API 密钥。请输入您的密钥以启用生成功能。',
   processingButton: '处理中...',
   generateImageButton: '生成图像',
   generateVideoButton: '生成视频',
@@ -647,16 +612,6 @@ const cn: Translation = {
   historyTitle: '历史记录',
   clearHistoryButton: '清除历史记录',
   reuseImageTooltip: '重复使用此图像',
-  apiKeyModalTitle: '如何获取 Google AI API 密钥',
-  apiKeyModalDescription: '要使用此应用程序，您需要一个来自 Google AI Studio 的免费 API 密钥。请按照以下步骤操作：',
-  apiKeyModalSteps: {
-    step1: '前往',
-    step2: '如果您尚未登录，请使用您的 Google 帐户登录。',
-    step3: '点击“创建 API 密钥”按钮。',
-    step4: '复制生成的 API 密钥。',
-    step5: '返回此处并将密钥粘贴到页面顶部的输入字段中。',
-  },
-  apiKeyModalNote: '注意：您的 API 密钥是敏感信息。请妥善保管，不要公开分享。',
   promptExamplesTitle: '灵感提示',
   promptSearchPlaceholder: (category) => `在 ${category} 中搜索...`,
   selectPromptButton: '使用提示',
@@ -697,9 +652,19 @@ const cn: Translation = {
   applyWatermark: "应用水印",
   watermarkDesc: "上传 PNG 文件作为水印使用。",
   watermarkDisclaimer: "水印功能仅适用于图像生成。",
+  // Fix: Add missing translations for ApiKeyModal.
+  apiKeyModalTitle: '设置您的 API 密钥',
+  apiKeyModalDescription: '要使用此应用程序，您需要一个 Google AI API 密钥。请按照以下步骤操作：',
+  apiKeyModalSteps: {
+    step1: '前往',
+    step2: '点击“在新项目中创建 API 密钥”。',
+    step3: '复制您生成的 API 密钥。',
+    step4: '在项目根目录中创建一个名为 `.env.local` 的文件。',
+    step5: '在 `.env.local` 文件中，添加 `API_KEY=\'YOUR_API_KEY\'`，并将 `YOUR_API_KEY` 替换为您复制的密钥。'
+  },
+  apiKeyModalNote: '注意：您的 API 密钥仅供个人使用。请妥善保管，不要将其提交到版本控制中。',
   error: {
     default: '发生未知错误。请重试。',
-    apiKey: '需要 API 密钥。请在上方输入。',
     promptOrImage: '请输入提示或上传图像。',
     fileProcessing: '处理文件时发生错误。',
     maxImages: '您最多可以上传 10 张图片。',

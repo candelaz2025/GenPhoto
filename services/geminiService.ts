@@ -1,3 +1,4 @@
+
 // Fix: Provide the implementation for the Gemini API service.
 // Fix: Replaced non-existent 'ContentPart' type with the correct 'Part' type.
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
@@ -45,14 +46,12 @@ export const editImageWithGemini = async (
   prompt: string,
   images: UploadedImage[],
   aspectRatio: AspectRatio,
-  apiKey: string,
   lang: Language,
   overlayText: string,
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  if (!apiKey) throw new Error(t.error.apiKey);
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   if (!prompt && images.length === 0) {
     throw new Error(t.error.promptOrImage);
@@ -140,12 +139,10 @@ export const inpaintImageWithGemini = async (
   prompt: string,
   originalImage: { base64: string; mimeType: string },
   maskImage: { base64: string; mimeType: string },
-  apiKey: string,
   lang: Language
 ): Promise<Result> => {
   const t = translations[lang];
-  if (!apiKey) throw new Error(t.error.apiKey);
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-2.5-flash-image-preview';
   
   const fullPrompt = t.service.inpaintInstruction(prompt);
@@ -194,14 +191,12 @@ export const inpaintImageWithGemini = async (
 export const generateImageWithImagen = async (
   prompt: string,
   aspectRatio: AspectRatio,
-  apiKey: string,
   lang: Language,
   overlayText: string,
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  if (!apiKey) throw new Error(t.error.apiKey);
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   if (!prompt) {
     throw new Error(t.error.promptOrImage);
@@ -245,12 +240,10 @@ export const generateImageWithImagen = async (
 export const generateVideoWithVeo = async (
   prompt: string,
   images: UploadedImage[],
-  apiKey: string,
   lang: Language
 ): Promise<Result> => {
     const t = translations[lang];
-    if (!apiKey) throw new Error(t.error.apiKey);
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     if (!prompt) {
         throw new Error(t.error.promptOrImage);
@@ -282,7 +275,7 @@ export const generateVideoWithVeo = async (
             throw new Error(t.error.videoFinishedNoLink);
         }
         
-        const finalUrl = `${downloadLink}&key=${apiKey}`;
+        const finalUrl = `${downloadLink}&key=${process.env.API_KEY}`;
 
         return { videoUrl: finalUrl };
 
