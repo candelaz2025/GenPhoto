@@ -26,3 +26,7 @@ export type ArtisticStyle = 'Default' | 'Photorealistic' | 'Anime' | 'Impression
 export type FontStyle = 'Default' | 'Serif' | 'Sans-serif' | 'Script' | 'Display' | 'Handwriting' | 'Futuristic';
 
 export type Language = 'th' | 'en' | 'cn';
+
+export type VideoCharacterGender = 'male' | 'female';
+
+export type VideoResolution = '480p' | '720p' | '1080p';

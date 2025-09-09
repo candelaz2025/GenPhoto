@@ -1,9 +1,12 @@
+
+
 import React, { useState, useRef, MouseEvent, WheelEvent, useEffect, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { Result } from '../types';
 import { 
     ReuseIcon, DownloadIcon, ShareIcon, ZoomInIcon, ZoomOutIcon, ResetZoomIcon, 
-    EditIcon, CropIcon, RotateCcwIcon, BrightnessIcon, CheckIcon, XIcon, PaintBrushIcon
+    EditIcon, CropIcon, RotateCcwIcon, BrightnessIcon, CheckIcon, XIcon, PaintBrushIcon,
+    UpscaleIcon
 } from './IconComponents';
 import { Translation } from '../locales/translations';
 
@@ -12,6 +15,8 @@ interface ResultDisplayProps {
   onAddToHistory: (result: Result) => void;
   t: Translation;
   onRegenerate: (originalImage: string, maskImage: string, inpaintPrompt: string) => Promise<Result>;
+  onUpscale: (currentImage: string, factor: number) => Promise<void>;
+  isLoading: boolean;
 }
 
 /**
@@ -88,7 +93,7 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
     image.src = url;
   });
 
-const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t, onRegenerate }) => {
+const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t, onRegenerate, onUpscale, isLoading }) => {
   // Pan/Zoom state for viewing
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -466,21 +471,29 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
         </div>
         
         {/* Always-visible action bar */}
-        <div className="flex justify-center items-center gap-4 w-full pt-4">
-            <button onClick={handleEnterEditMode} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content">
+        <div className="flex flex-wrap justify-center items-center gap-3 w-full pt-4">
+            <button onClick={handleEnterEditMode} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed">
                 <EditIcon className="w-6 h-6" />
                 <span className="text-xs mt-1">{t.editTooltip}</span>
             </button>
-            <button onClick={handleAdd} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content">
+             <button onClick={() => onUpscale(currentImage!, 2)} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed" title={t.upscaleTooltip}>
+                <UpscaleIcon className="w-6 h-6" />
+                <span className="text-xs mt-1">{t.upscale2xButton}</span>
+            </button>
+            <button onClick={() => onUpscale(currentImage!, 3)} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed" title={t.upscaleTooltip}>
+                <UpscaleIcon className="w-6 h-6" />
+                <span className="text-xs mt-1">{t.upscale3xButton}</span>
+            </button>
+            <button onClick={handleAdd} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed">
                 <ReuseIcon className="w-6 h-6" />
                 <span className="text-xs mt-1">{t.saveResultTooltip}</span>
             </button>
-            <button onClick={handleDownload} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content">
+            <button onClick={handleDownload} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed">
                 <DownloadIcon className="w-6 h-6" />
                 <span className="text-xs mt-1">{t.downloadImageTooltip}</span>
             </button>
             {navigator.share && (
-                <button onClick={handleShare} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content">
+                <button onClick={handleShare} disabled={isLoading} className="flex flex-col items-center p-2 rounded-lg hover:bg-base-300 transition-colors text-content disabled:opacity-50 disabled:cursor-not-allowed">
                     <ShareIcon className="w-6 h-6" />
                     <span className="text-xs mt-1">{t.shareImageTooltip}</span>
                 </button>

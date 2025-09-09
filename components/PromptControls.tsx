@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { SparklesIcon, VideoIcon } from './IconComponents';
-import { AspectRatio, ArtisticStyle, FontStyle } from '../types';
+import { AspectRatio, ArtisticStyle, FontStyle, VideoCharacterGender, VideoResolution } from '../types';
 import { Translation } from '../locales/translations';
 
 interface PromptControlsProps {
@@ -19,6 +18,14 @@ interface PromptControlsProps {
   setStyle: (style: ArtisticStyle) => void;
   generationMode: 'image' | 'video';
   setGenerationMode: (mode: 'image' | 'video') => void;
+  videoAspectRatio: AspectRatio;
+  setVideoAspectRatio: (ratio: AspectRatio) => void;
+  videoCharacterGender: VideoCharacterGender;
+  setVideoCharacterGender: (gender: VideoCharacterGender) => void;
+  videoResolution: VideoResolution;
+  setVideoResolution: (resolution: VideoResolution) => void;
+  videoScript: string;
+  setVideoScript: React.Dispatch<React.SetStateAction<string>>;
   onSubmit: () => void;
   onOpenExamples: () => void;
   isLoading: boolean;
@@ -30,22 +37,16 @@ interface PromptControlsProps {
 const PromptControls: React.FC<PromptControlsProps> = ({ 
     promptTitle, setPromptTitle, prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
     aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, 
+    videoAspectRatio, setVideoAspectRatio, videoCharacterGender, setVideoCharacterGender,
+    videoResolution, setVideoResolution, videoScript, setVideoScript,
     onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
 }) => {
   const [placeholder, setPlaceholder] = useState('');
-  const [videoWarningShown, setVideoWarningShown] = useState(false);
   const promptWrapperRef = useRef<HTMLDivElement>(null);
   const mainPromptMaxLength = 1000;
   const textOverlayMaxLength = 300;
+  const videoScriptMaxLength = 1000;
 
-  const adTemplatePrompts = {
-    studio: `วางสินค้าที่อัปโหลดบนแท่นโชว์สินค้าทรงเรขาคณิตสีขาวสะอาดตาในสตูดิโอที่มีแสงสว่างนุ่มนวล พื้นหลังเป็นสีพาสเทลเรียบๆ เช่น สีครีมหรือสีฟ้าอ่อน สร้างเงาที่นุ่มนวลใต้สินค้าเพื่อเพิ่มความลึก ทำให้ภาพดูหรูหรา มินิมอล และทันสมัย สไตล์ภาพถ่ายสินค้ามืออาชีพ ความละเอียด 8k`,
-    lifestyle: `สร้างภาพเสมือนจริงที่สินค้าที่อัปโหลดกำลังถูกใช้งานในชีวิตประวัน เช่น หากเป็นครีมกันแดด ให้วางอยู่บนผ้าเช็ดตัวริมสระว่ายน้ำที่มีแดดสดใส หรือหากเป็นแก้วกาแฟ ให้มีคนกำลังถืออยู่ในร้านกาแฟบรรยากาศอบอุ่น เน้นให้ภาพดูเป็นธรรมชาติและเข้าถึงง่าย แสงสวยงามเหมือนถ่ายตอน Golden Hour สไตล์ภาพถ่ายไลฟ์สไตล์`,
-    nature: `จัดวางสินค้าที่อัปโหลดท่ามกลางองค์ประกอบจากธรรมชาติที่สวยงาม เช่น ใบไม้เขียวชอุ่ม ดอกไม้สด หรือบนก้อนหินที่มีมอสเกาะอยู่ แสงแดดส่องลอดผ่านใบไม้ลงมาสร้างลวดลายบนสินค้า ให้ความรู้สึกสดชื่น ออร์แกนิก และเชื่อมโยงกับธรรมชาติ เหมาะสำหรับสินค้าเพื่อสุขภาพหรือความงาม`,
-    luxurious: `นำเสนอสินค้าที่อัปโหลดในฉากที่ดูหรูหราและน่าทึ่ง เช่น บนพื้นหลังผ้าไหมสีเข้ม มีควันหรือหมอกบางๆ ลอยอยู่รอบๆ แสงสปอตไลท์ส่องลงมาที่ตัวสินค้าโดยตรงเพื่อสร้างคอนทราสต์ที่ชัดเจน ทำให้สินค้าดูโดดเด่น มีระดับ และน่าค้นหา สไตล์ภาพถ่ายโฆษณาสินค้าหรู`,
-    productMockup: `Ultra-realistic advertising style, a giant golden tube of "Pantene Pro-V 3 Minute Miracle Daily Moisture Renewal Conditioner" standing majestically in the middle of a serene lake surrounded by pine forests and snow-capped mountains in the background, the tube is overgrown with green vines and leaves at its base, two realistic bears standing near the foreground on both sides, rocks and grass on the ground, white flowers blooming around, a hummingbird flying near the top left, other birds soaring across a bright blue sky with scattered clouds, soft sunlight illuminating the scene, magical fantasy atmosphere, hyper-detailed textures, 4K, vertical aspect ratio 4:5.`
-  };
-  
   // Effect for dynamic placeholder
   useEffect(() => {
     if (generationMode === 'video') {
@@ -112,20 +113,48 @@ const PromptControls: React.FC<PromptControlsProps> = ({
   };
 
   const handleModeChange = (mode: 'image' | 'video') => {
-    if (mode === 'video' && !videoWarningShown) {
-      if (window.confirm(t.videoWarningMessage)) {
-        setGenerationMode('video');
-        setVideoWarningShown(true);
-      }
-    } else {
-      setGenerationMode(mode);
-    }
+    setGenerationMode(mode);
   };
 
-  const aspectRatios: { label: string, value: AspectRatio }[] = [
+  const handleVideoPromptTemplate = (template: 'review' | 'unboxing' | 'lifestyle' | 'showcase') => {
+      const character = t.service.videoCharacter[videoCharacterGender];
+      let generatedPrompt = '';
+      switch (template) {
+          case 'review':
+              setPromptTitle(t.videoAdHelperReview);
+              generatedPrompt = t.service.videoPromptReview(character, videoAspectRatio);
+              break;
+          case 'unboxing':
+              setPromptTitle(t.videoAdHelperUnboxing);
+              generatedPrompt = t.service.videoPromptUnboxing(character, videoAspectRatio);
+              break;
+          case 'lifestyle':
+              setPromptTitle(t.videoAdHelperLifestyle);
+              generatedPrompt = t.service.videoPromptLifestyle(character, videoAspectRatio);
+              break;
+          case 'showcase':
+              setPromptTitle(t.videoAdHelperShowcase);
+              generatedPrompt = t.service.videoPromptShowcase(videoAspectRatio);
+              break;
+      }
+      setPrompt(generatedPrompt);
+  };
+
+  const imageAspectRatios: { label: string, value: AspectRatio }[] = [
     { label: t.aspectRatioSquare, value: '1:1' },
     { label: t.aspectRatioLandscape, value: '16:9' },
     { label: t.aspectRatioPortrait, value: '9:16' },
+  ];
+
+  const videoAspectRatios: { label: string, value: AspectRatio }[] = [
+    { label: t.aspectRatioPortrait, value: '9:16' },
+    { label: t.aspectRatioLandscape, value: '16:9' },
+  ];
+
+  const videoResolutions: { label: string, value: VideoResolution }[] = [
+    { label: '480p', value: '480p' },
+    { label: '720p', value: '720p' },
+    { label: '1080p', value: '1080p' },
   ];
 
   const artisticStyles: { label: string; value: ArtisticStyle }[] = Object.entries(t.artisticStyles).map(([value, label]) => ({
@@ -143,45 +172,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
   return (
     <div className="w-full flex flex-col space-y-4">
       
-      {generationMode === 'image' && (
-        <div className="flex justify-center">
-          <button 
-            onClick={onOpenExamples} 
-            className="px-6 py-2 text-md bg-gradient-to-r from-brand-secondary to-brand-primary text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-brand-primary hover:to-brand-secondary transition-all transform hover:scale-105 animate-fade-in flex items-center gap-2"
-          >
-            <SparklesIcon className="w-5 h-5" />
-            {t.inspiringPromptsButton}
-          </button>
-        </div>
-      )}
-      
-      {imageCount > 0 && generationMode === 'image' && (
-        <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-brand-secondary/30">
-          <h3 className="text-center font-semibold text-content">
-            {t.adHelperTitle}
-          </h3>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button onClick={() => { setPromptTitle(t.adHelperStudio); setPrompt(adTemplatePrompts.studio); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-              {t.adHelperStudio}
-            </button>
-            <button onClick={() => { setPromptTitle(t.adHelperLifestyle); setPrompt(adTemplatePrompts.lifestyle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-              {t.adHelperLifestyle}
-            </button>
-            <button onClick={() => { setPromptTitle(t.adHelperNature); setPrompt(adTemplatePrompts.nature); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-              {t.adHelperNature}
-            </button>
-            <button onClick={() => { setPromptTitle(t.adHelperLuxurious); setPrompt(adTemplatePrompts.luxurious); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-              {t.adHelperLuxurious}
-            </button>
-            <button onClick={() => { setPromptTitle(t.adHelperProductMockup); setPrompt(adTemplatePrompts.productMockup); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
-              {t.adHelperProductMockup}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
-        <div className="flex flex-col gap-3 items-center">
+      <div className="flex flex-col items-center">
             <label className="font-semibold text-content">{t.modeLabel}</label>
             <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
                 <button
@@ -204,47 +195,125 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                 </button>
             </div>
         </div>
-        
-        {generationMode === 'image' && (
-          <>
-            <div className="flex flex-col gap-3 items-center animate-fade-in">
-              <label className="font-semibold text-content">{t.styleLabel}</label>
-              <div className="flex flex-wrap gap-2 p-1 bg-base-200 rounded-lg justify-center">
-                {artisticStyles.map(({ label, value }) => (
-                  <button
-                    key={value}
-                    onClick={() => handleStyleChange(value)}
-                    disabled={isLoading}
-                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                      style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            <div className="flex flex-col gap-3 items-center animate-fade-in">
-              <label className="font-semibold text-content">{t.aspectRatioLabel}</label>
-              <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
-                {aspectRatios.map(({ label, value }) => (
-                  <button
-                    key={value}
-                    onClick={() => setAspectRatio(value)}
-                    disabled={isLoading}
-                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                      aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                    }`}
-                  >
-                    {label} ({value})
-                  </button>
-                ))}
-              </div>
+      {generationMode === 'image' && (
+        <>
+            <div className="flex justify-center animate-fade-in">
+              <button 
+                onClick={onOpenExamples} 
+                className="px-6 py-2 text-md bg-gradient-to-r from-brand-secondary to-brand-primary text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-brand-primary hover:to-brand-secondary transition-all transform hover:scale-105 flex items-center gap-2"
+              >
+                <SparklesIcon className="w-5 h-5" />
+                {t.inspiringPromptsButton}
+              </button>
             </div>
-          </>
-        )}
-      </div>
+          
+            {imageCount > 0 && (
+                <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-brand-secondary/30">
+                  <h3 className="text-center font-semibold text-content">
+                    {t.adHelperTitle}
+                  </h3>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <button onClick={() => { setPromptTitle(t.adHelperStudio); setPrompt(t.service.adHelperPrompts.studio); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                      {t.adHelperStudio}
+                    </button>
+                    <button onClick={() => { setPromptTitle(t.adHelperLifestyle); setPrompt(t.service.adHelperPrompts.lifestyle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                      {t.adHelperLifestyle}
+                    </button>
+                    <button onClick={() => { setPromptTitle(t.adHelperNature); setPrompt(t.service.adHelperPrompts.nature); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                      {t.adHelperNature}
+                    </button>
+                    <button onClick={() => { setPromptTitle(t.adHelperLuxurious); setPrompt(t.service.adHelperPrompts.luxurious); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                      {t.adHelperLuxurious}
+                    </button>
+                     <button onClick={() => { setPromptTitle(t.adHelperProductMockup); setPrompt(t.service.adHelperPrompts.productMockup); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                       {t.adHelperProductMockup}
+                     </button>
+                  </div>
+                </div>
+            )}
+
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-center animate-fade-in">
+                <div className="flex flex-col gap-3 items-center">
+                  <label className="font-semibold text-content">{t.styleLabel}</label>
+                  <div className="flex flex-wrap gap-2 p-1 bg-base-200 rounded-lg justify-center">
+                    {artisticStyles.map(({ label, value }) => (
+                      <button
+                        key={value}
+                        onClick={() => handleStyleChange(value)}
+                        disabled={isLoading}
+                        className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                          style === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 items-center">
+                  <label className="font-semibold text-content">{t.aspectRatioLabel}</label>
+                  <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                    {imageAspectRatios.map(({ label, value }) => (
+                      <button
+                        key={value}
+                        onClick={() => setAspectRatio(value)}
+                        disabled={isLoading}
+                        className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                          aspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                        }`}
+                      >
+                        {label} ({value})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+            </div>
+        </>
+      )}
+
+      {generationMode === 'video' && (
+          <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-4 border border-brand-secondary/30">
+            <h3 className="text-center font-semibold text-content">{t.videoAdHelperTitle}</h3>
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+                <div className="flex items-center gap-3">
+                    <label className="font-semibold text-content">{t.videoAspectRatioLabel}</label>
+                    <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                        {videoAspectRatios.map(({ label, value }) => (
+                            <button key={value} onClick={() => setVideoAspectRatio(value)} disabled={isLoading} className={`px-4 py-1 text-sm rounded-md transition-colors ${videoAspectRatio === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'}`}>{label} ({value})</button>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <label className="font-semibold text-content">{t.videoResolutionLabel}</label>
+                    <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                        {videoResolutions.map(({ label, value }) => (
+                            <button key={value} onClick={() => setVideoResolution(value)} disabled={isLoading} className={`px-4 py-1 text-sm rounded-md transition-colors ${videoResolution === value ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'}`}>{label}</button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            
+            {imageCount > 0 && (
+              <div className="space-y-4 pt-4 border-t border-base-300/50">
+                <div className="flex items-center justify-center gap-3">
+                    <label className="font-semibold text-content">{t.videoAdHelperCharacterLabel}</label>
+                    <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                        <button onClick={() => setVideoCharacterGender('female')} disabled={isLoading} className={`px-4 py-1 text-sm rounded-md transition-colors ${videoCharacterGender === 'female' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'}`}>{t.videoAdHelperCharacterFemale}</button>
+                        <button onClick={() => setVideoCharacterGender('male')} disabled={isLoading} className={`px-4 py-1 text-sm rounded-md transition-colors ${videoCharacterGender === 'male' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'}`}>{t.videoAdHelperCharacterMale}</button>
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center pt-2">
+                  <button onClick={() => handleVideoPromptTemplate('review')} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">{t.videoAdHelperReview}</button>
+                  <button onClick={() => handleVideoPromptTemplate('unboxing')} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">{t.videoAdHelperUnboxing}</button>
+                  <button onClick={() => handleVideoPromptTemplate('lifestyle')} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">{t.videoAdHelperLifestyle}</button>
+                  <button onClick={() => handleVideoPromptTemplate('showcase')} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">{t.videoAdHelperShowcase}</button>
+                </div>
+              </div>
+            )}
+          </div>
+      )}
 
       <div className="w-full p-4 bg-base-200/50 rounded-lg space-y-3">
         <label htmlFor="prompt-title-input" className="block text-sm font-semibold text-content">{t.promptTitleLabel}</label>
@@ -275,6 +344,29 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             </div>
         </div>
       </div>
+
+      {generationMode === 'video' && (
+            <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-base-300">
+                <label htmlFor="video-script-input" className="block font-semibold text-center text-content">
+                    {t.videoScriptLabel}
+                </label>
+                <div className="relative">
+                    <textarea
+                        id="video-script-input"
+                        value={videoScript}
+                        onChange={(e) => setVideoScript(e.target.value)}
+                        placeholder={t.videoScriptPlaceholder}
+                        className="w-full p-2 pr-20 bg-base-100 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none transition-shadow resize-none"
+                        rows={2}
+                        disabled={commonButtonDisabled}
+                        maxLength={videoScriptMaxLength}
+                    />
+                    <div className="absolute bottom-2 right-3 text-xs text-gray-500 pointer-events-none">
+                        {videoScript.length} / {videoScriptMaxLength}
+                    </div>
+                </div>
+            </div>
+      )}
 
       {generationMode === 'image' && (
         <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-base-300">

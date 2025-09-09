@@ -1,9 +1,21 @@
-
 // Fix: Provide the implementation for the Gemini API service.
 // Fix: Replaced non-existent 'ContentPart' type with the correct 'Part' type.
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from '@google/genai';
-import { UploadedImage, Result, AspectRatio, ArtisticStyle, Language, FontStyle } from '../types';
+import { UploadedImage, Result, AspectRatio, ArtisticStyle, Language, FontStyle, VideoResolution } from '../types';
 import { translations } from '../locales/translations';
+
+/**
+ * Creates and returns a Gemini AI client, checking for a valid API key first.
+ * @param lang The current language for error messages.
+ * @returns An instance of GoogleGenAI.
+ */
+const getAiClient = (lang: Language): GoogleGenAI => {
+    // Fail fast with a clear error if the API key is not configured.
+    if (!process.env.API_KEY || process.env.API_KEY === 'YOUR_API_KEY') {
+        throw new Error(translations[lang].error.keyNotSet);
+    }
+    return new GoogleGenAI({ apiKey: process.env.API_KEY });
+};
 
 /**
  * Handles API errors by converting them into user-friendly messages.
@@ -16,9 +28,12 @@ const handleApiError = (error: unknown, lang: Language): string => {
     const t = translations[lang].error;
 
     if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const message = error.message;
         
-        if (message.includes('api key not valid') || message.includes('invalid api key') || message.includes('api_key_invalid')) {
+        if (message.includes('API_KEY')) { // Catch our custom key error
+            return message;
+        }
+        if (message.toLowerCase().includes('api key not valid') || message.toLowerCase().includes('invalid api key') || message.toLowerCase().includes('api_key_invalid')) {
             return t.invalidKey;
         }
         if (message.includes('rate limit') || message.includes('quota')) {
@@ -51,7 +66,7 @@ export const editImageWithGemini = async (
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAiClient(lang);
 
   if (!prompt && images.length === 0) {
     throw new Error(t.error.promptOrImage);
@@ -142,7 +157,7 @@ export const inpaintImageWithGemini = async (
   lang: Language
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAiClient(lang);
   const model = 'gemini-2.5-flash-image-preview';
   
   const fullPrompt = t.service.inpaintInstruction(prompt);
@@ -196,7 +211,7 @@ export const generateImageWithImagen = async (
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAiClient(lang);
 
   if (!prompt) {
     throw new Error(t.error.promptOrImage);
@@ -240,10 +255,13 @@ export const generateImageWithImagen = async (
 export const generateVideoWithVeo = async (
   prompt: string,
   images: UploadedImage[],
-  lang: Language
+  lang: Language,
+  aspectRatio: AspectRatio,
+  resolution: VideoResolution,
+  script: string,
 ): Promise<Result> => {
     const t = translations[lang];
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = getAiClient(lang);
 
     if (!prompt) {
         throw new Error(t.error.promptOrImage);
@@ -251,10 +269,12 @@ export const generateVideoWithVeo = async (
 
     const model = 'veo-2.0-generate-001';
     
+    const fullPrompt = t.service.generateFullVideoPrompt(prompt, aspectRatio, resolution, script);
+
     try {
         let operation = await ai.models.generateVideos({
             model: model,
-            prompt: prompt,
+            prompt: fullPrompt,
             image: images.length > 0 ? {
                 imageBytes: images[0].base64,
                 mimeType: images[0].mimeType,
@@ -269,17 +289,93 @@ export const generateVideoWithVeo = async (
             operation = await ai.operations.getVideosOperation({ operation: operation });
         }
 
+        if (operation.error) {
+            const errorMessage = `Video generation failed: ${operation.error.message} (Code: ${operation.error.code})`;
+            console.error('Veo Operation Error:', operation.error);
+            throw new Error(errorMessage);
+        }
+
         const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
 
         if (!downloadLink) {
             throw new Error(t.error.videoFinishedNoLink);
         }
         
-        const finalUrl = `${downloadLink}&key=${process.env.API_KEY}`;
+        const videoFetchUrl = `${downloadLink}&key=${process.env.API_KEY}`;
+        const videoResponse = await fetch(videoFetchUrl);
 
-        return { videoUrl: finalUrl };
+        if (!videoResponse.ok) {
+            const errorBody = await videoResponse.text();
+            console.error("Failed to fetch video:", videoResponse.status, errorBody);
+            throw new Error(`Failed to download the generated video. Status: ${videoResponse.status}`);
+        }
+
+        const videoBlob = await videoResponse.blob();
+
+        const videoDataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    resolve(reader.result);
+                } else {
+                    reject(new Error("Failed to read video blob as data URL."));
+                }
+            };
+            reader.onerror = () => reject(new Error("Failed to convert video blob to data URL."));
+            reader.readAsDataURL(videoBlob);
+        });
+
+        return { videoUrl: videoDataUrl };
 
     } catch (error) {
         throw new Error(handleApiError(error, lang));
     }
+};
+
+export const upscaleImage = async (
+  originalImage: { base64: string; mimeType: string },
+  factor: number,
+  lang: Language
+): Promise<Result> => {
+  const t = translations[lang];
+  const ai = getAiClient(lang);
+  const model = 'gemini-2.5-flash-image-preview';
+  
+  const fullPrompt = t.service.upscaleInstruction(`${factor}x`);
+
+  const parts: Part[] = [
+    { inlineData: { data: originalImage.base64, mimeType: originalImage.mimeType } },
+    { text: fullPrompt },
+  ];
+
+  try {
+    const result: GenerateContentResponse = await ai.models.generateContent({
+      model: model,
+      contents: { parts: parts },
+      config: {
+        responseModalities: [Modality.IMAGE],
+      },
+    });
+
+    const finalResult: Result = {};
+
+    if (result.candidates && result.candidates.length > 0) {
+      for (const part of result.candidates[0].content.parts) {
+        if (part.inlineData) {
+          const base64ImageBytes: string = part.inlineData.data;
+          const mimeType = part.inlineData.mimeType;
+          finalResult.image = `data:${mimeType};base64,${base64ImageBytes}`;
+          break; // Expecting only one image part
+        }
+      }
+    }
+
+    if (!finalResult.image) {
+      throw new Error(t.error.emptyResponse);
+    }
+    
+    return finalResult;
+  } catch (error) {
+    throw new Error(handleApiError(error, lang));
+  }
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidvv4 } from 'uuid';
 
@@ -13,8 +12,8 @@ import Loader from './components/Loader';
 import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import WatermarkControls from './components/WatermarkControls';
-import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini } from './services/geminiService';
-import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle } from './types';
+import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini, upscaleImage } from './services/geminiService';
+import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle, VideoCharacterGender, VideoResolution } from './types';
 import { translations, PromptExample } from './locales/translations';
 
 // Helper function to convert file to base64
@@ -35,6 +34,7 @@ function App() {
   const [language, setLanguage] = useState<Language>(
     () => (localStorage.getItem('app-language') as Language) || 'th'
   );
+  // Image specific states
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
     () => (localStorage.getItem('gemini-aspect-ratio') as AspectRatio) || '16:9'
   );
@@ -43,6 +43,13 @@ function App() {
   );
   const [overlayText, setOverlayText] = useState('');
   const [fontStyle, setFontStyle] = useState<FontStyle>('Default');
+  
+  // Video specific states
+  const [videoAspectRatio, setVideoAspectRatio] = useState<AspectRatio>('9:16');
+  const [videoCharacterGender, setVideoCharacterGender] = useState<VideoCharacterGender>('female');
+  const [videoResolution, setVideoResolution] = useState<VideoResolution>('720p');
+  const [videoScript, setVideoScript] = useState('');
+
   const [result, setResult] = useState<Result | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingMode, setLoadingMode] = useState<'image' | 'video' | null>(null);
@@ -239,7 +246,14 @@ function App() {
     try {
         let apiResult: Result;
         if (generationMode === 'video') {
-            apiResult = await generateVideoWithVeo(fullPrompt, images, language);
+            apiResult = await generateVideoWithVeo(
+                fullPrompt,
+                images,
+                language,
+                videoAspectRatio,
+                videoResolution,
+                videoScript
+            );
         } else {
             if (images.length > 0) {
                 apiResult = await editImageWithGemini(
@@ -264,7 +278,6 @@ function App() {
         
         setResult(finalResult);
 
-    // Fix: Added missing curly braces to the catch block to fix a syntax error that was causing numerous compilation errors.
     } catch (err) {
       handleError(err);
     } finally {
@@ -310,6 +323,33 @@ function App() {
       setLoadingMode(null);
     }
   }
+
+  const handleUpscale = async (currentImage: string, factor: number) => {
+    setLoadingMode('image');
+    setError(null);
+    try {
+      const [header, data] = currentImage.split(',');
+      const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+
+      const apiResult = await upscaleImage({ base64: data, mimeType }, factor, language);
+
+      let finalResult = apiResult;
+      if (isWatermarkEnabled && watermark && apiResult.image) {
+        try {
+          const watermarkedImage = await applyWatermark(apiResult.image, watermark);
+          finalResult = { ...apiResult, image: watermarkedImage };
+        } catch (err) {
+          console.error("Failed to apply watermark after upscale, showing upscaled image.", err);
+          setError(t.error.apiError("Could not apply watermark, showing original image."));
+        }
+      }
+      setResult(finalResult);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setLoadingMode(null);
+    }
+  };
 
   const handleAddToHistory = (res: Result) => {
     if (res.image && !history.some(item => item.imageUrl === res.image)) {
@@ -403,6 +443,14 @@ function App() {
             setStyle={setStyle}
             generationMode={generationMode}
             setGenerationMode={setGenerationMode}
+            videoAspectRatio={videoAspectRatio}
+            setVideoAspectRatio={setVideoAspectRatio}
+            videoCharacterGender={videoCharacterGender}
+            setVideoCharacterGender={setVideoCharacterGender}
+            videoResolution={videoResolution}
+            setVideoResolution={setVideoResolution}
+            videoScript={videoScript}
+            setVideoScript={setVideoScript}
             onSubmit={handleSubmit}
             onOpenExamples={() => setIsExamplesModalOpen(true)}
             isLoading={!!loadingMode}
@@ -423,7 +471,7 @@ function App() {
             </div>
           )}
 
-          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} t={t} onRegenerate={handleRegenerate} />}
+          {result && <ResultDisplay result={result} onAddToHistory={handleAddToHistory} t={t} onRegenerate={handleRegenerate} onUpscale={handleUpscale} isLoading={!!loadingMode} />}
         </div>
         
         <HistoryGallery history={history} onClear={handleClearHistory} onReuse={handleReuseFromHistory} t={t} />
