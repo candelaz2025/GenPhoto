@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useRef, MouseEvent, WheelEvent, useEffect, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { Result } from '../types';
@@ -239,13 +237,28 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onAddToHistory, t
     document.body.removeChild(link);
   };
   const handleShare = async () => {
-    if (!currentImage || !navigator.share) { alert(t.unsupportedShare); return; }
+    if (!currentImage || !navigator.share) {
+      alert(t.unsupportedShare);
+      return;
+    }
     try {
-        const response = await fetch(currentImage);
-        const blob = await response.blob();
-        const file = new File([blob], `gemini-art-${Date.now()}.png`, { type: blob.type });
-        await navigator.share({ title: t.appName, text: 'Check out this image I generated with AI!', files: [file] });
-    } catch (error) { console.error('Error sharing:', error); }
+      const response = await fetch(currentImage);
+      const blob = await response.blob();
+      const file = new File([blob], `gemini-art-${Date.now()}.png`, { type: blob.type });
+      await navigator.share({
+        title: t.appName,
+        text: 'Check out this image I generated with AI!',
+        files: [file],
+      });
+    } catch (error) {
+      // User canceling the share dialog is not an actual error, so we can ignore it.
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Log for debugging, but don't treat it as a critical error.
+        console.log('Share action was canceled by the user.');
+      } else {
+        console.error('Error sharing:', error);
+      }
+    }
   };
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => { if (scale > 1 && !isEditing) { e.preventDefault(); setIsPanning(true); } };
   const handleMouseUp = () => setIsPanning(false);
