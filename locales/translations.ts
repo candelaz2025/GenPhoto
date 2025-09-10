@@ -1,6 +1,3 @@
-// Fix: Provide a full implementation for the translations module.
-// This resolves module import errors across the application and fixes
-// downstream type errors in components that consume the translation object.
 import { ArtisticStyle, FontStyle, VideoCharacterGender } from '../types';
 
 export interface PromptExample {
@@ -227,6 +224,7 @@ const en: Translation = {
   artisticStyles: {
     Default: 'Default',
     Photorealistic: 'Photorealistic',
+    '3D': '3D',
     Anime: 'Anime',
     Impressionist: 'Impressionist',
     Cartoon: 'Cartoon',
@@ -334,6 +332,7 @@ const en: Translation = {
     { title: 'Change the Background', description: 'Swap out the background of your image to create a completely new mood or setting.', prompt: 'Change the blurry background to a minimalist studio with soft lighting.' },
     { title: 'Adjust Lighting & Shadows', description: 'Modify the light and shadows to give your image a softer, more professional look.', prompt: 'Soften the shadows on the face to make them look smoother.' },
     { title: 'Pokémon Trainer', description: "Transform yourself into a Pokémon trainer! This prompt lets you specify your favorite Pokémon, your outfit, and a dramatic background for a personalized adventure.", prompt: "Create image of me as pokemon trainer with a pokemon [celebi] on my shoulder. Make me wearing a red and blue pokemon trainer cap. Make me wearing cool futuristic yellow hoodie and blue jeans and white sneaker. Make me holding a pokeball. Background put me in green jungle with low lighting. Style realistic." },
+    { title: 'Anime Action Figure', description: "Create a hyper-realistic studio photograph of yourself as a premium anime-style action figure, complete with dynamic posing, detailed outfits, and a collector's gallery background.", prompt: "An ultra-realistic studio photograph of a premium Anime-styled action figure. Featuring full-body of a fit Southeast Asian male with salt-and-pepper hair and a neat beard, with the exact face from the uploaded photo, dressed in Demon Slayer Tanjiro Kamados's outfit. The figure is posed dinamically heroic holding his sword, smiling sinisterly, standing on a thick polished square chrome base engraved with 'Demon Slayer'. Behind him stands a towering (Daki) figure with meticulous sculpted details, larger and more imposing. The entire figure and base are fully visible within the frame, placed on top of a clear glass display showcase. The background is filled with rows of anime figures inside brightly illuminated glass display shelves, creating the atmosphere of a premium anime collectible gallery. Bright clean studio lighting, sharp focus, seamless reflections, glossy finish. Vertical 8K framing." },
   ],
   whatsNewTitle: "What's New",
   whatsNewDate: 'September 8, 2025',
@@ -469,6 +468,7 @@ const th: Translation = {
   artisticStyles: {
     Default: 'ค่าเริ่มต้น',
     Photorealistic: 'เสมือนจริง',
+    '3D': '3D',
     Anime: 'อนิเมะ',
     Impressionist: 'อิมเพรสชันนิสต์',
     Cartoon: 'การ์ตูน',
@@ -576,6 +576,7 @@ const th: Translation = {
     { title: 'เปลี่ยนฉากหลัง', description: 'เปลี่ยนพื้นหลังของภาพเพื่อสร้างบรรยากาศใหม่ๆ', prompt: 'เปลี่ยนฉากหลังเบลอ ๆ ให้เป็นสตูดิโอแสงนุ่ม ๆ มินิมอล ๆ หน่อย' },
     { title: 'ปรับแสงเงา', description: 'แก้ไขแสงและเงาเพื่อให้ภาพดูนุ่มนวลและเป็นมืออาชีพมากขึ้น', prompt: 'ช่วยลดเงาบนใบหน้าให้ดูนุ่มนวลขึ้น' },
     { title: "โปเกมอนเทรนเนอร์", description: "แปลงร่างคุณเป็นโปเกมอนเทรนเนอร์! คำสั่งนี้ให้คุณระบุโปเกมอนตัวโปรด ชุดของคุณ และพื้นหลังสุดอลังการเพื่อการผจญภัยในแบบของคุณ", prompt: "สร้างภาพของฉันในฐานะโปเกมอนเทรนเนอร์พร้อมกับโปเกมอน [เซเลบี] บนบ่าของฉัน ให้ฉันสวมหมวกโปเกมอนเทรนเนอร์สีแดงและน้ำเงิน ให้ฉันสวมเสื้อฮู้ดสีเหลืองล้ำยุคสุดเท่กับกางเกงยีนส์สีน้ำเงินและรองเท้าผ้าใบสีขาว ให้ฉันกำลังถือโปเกบอล พื้นหลังเป็นป่าสีเขียวที่มีแสงน้อย สไตล์สมจริง" },
+    { title: 'ฟิกเกอร์อนิเมะ', description: 'สร้างภาพถ่ายสตูดิโอที่สมจริงสุดๆ ของตัวคุณในรูปแบบฟิกเกอร์อนิเมะระดับพรีเมียม พร้อมท่าโพสสุดเท่ ชุดเสื้อผ้าที่มีรายละเอียดสูง และพื้นหลังเป็นแกลเลอรี่ของสะสม', prompt: "ภาพถ่ายสตูดิโอที่สมจริงสุดๆ ของฟิกเกอร์อนิเมะระดับพรีเมียม นำเสนอชายเอเชียตะวันออกเฉียงใต้หุ่นดี ผมสีดอกเลาและเคราที่ตกแต่งอย่างเรียบร้อย โดยใช้ใบหน้าที่แน่นอนจากรูปภาพที่อัปโหลด แต่งกายในชุดของคามาโดะ ทันจิโร่จากดาบพิฆาตอสูร ฟิกเกอร์โพสท่าฮีโร่แบบไดนามิกถือดาบ ยิ้มอย่างชั่วร้าย ยืนบนฐานโครเมียมสี่เหลี่ยมหนาขัดเงาที่สลักคำว่า 'Demon Slayer' ด้านหลังมีฟิกเกอร์ (ดาคิ) สูงตระหง่านพร้อมรายละเอียดที่แกะสลักอย่างพิถีพิถัน ใหญ่และน่าเกรงขามกว่า ทั้งฟิกเกอร์และฐานสามารถมองเห็นได้เต็มตัวภายในเฟรม วางอยู่บนตู้โชว์กระจกใส พื้นหลังเต็มไปด้วยแถวของฟิกเกอร์อนิเมะในตู้โชว์กระจกที่มีแสงสว่างจ้า สร้างบรรยากาศของแกลเลอรี่ของสะสมอนิเมะระดับพรีเมียม แสงสตูดิโอที่สว่างสะอาด โฟกัสคมชัด การสะท้อนที่ไร้รอยต่อ ผิวเคลือบมันเงา เฟรมแนวตั้ง 8K" },
   ],
   whatsNewTitle: "มีอะไรใหม่",
   whatsNewDate: '8 กันยายน 2025',
@@ -711,6 +712,7 @@ const cn: Translation = {
   artisticStyles: {
     Default: '默认',
     Photorealistic: '写实',
+    '3D': '3D',
     Anime: '动漫',
     Impressionist: '印象派',
     Cartoon: '卡通',
@@ -818,6 +820,7 @@ const cn: Translation = {
     { title: '更换背景', description: '替换图像的背景，营造全新的氛围或场景。', prompt: '将模糊的背景换成一个光线柔和的极简主义工作室。' },
     { title: '调整光影', description: '修改光线和阴影，让您的图像看起来更柔和、更专业。', prompt: '柔化脸上的阴影，让它们看起来更平滑。' },
     { title: "宝可梦训练师", description: "将您自己变成宝可梦训练师！此提示可让您指定您最喜欢的宝可梦、您的服装以及戏剧性的背景，以打造个性化的冒险之旅。", prompt: "创建一张我作为宝可梦训练师的图片，肩膀上站着一只宝可梦[时拉比]。让我戴着一顶红色和蓝色的宝可梦训练师帽子。让我穿着酷炫的未来派黄色连帽衫、蓝色牛仔裤和白色运动鞋。让我手里拿着一个精灵球。背景是光线昏暗的绿色丛林。风格写实。" },
+    { title: '动漫手办', description: '创建一张您自己的超写实工作室照片，化身为高级动漫风格的可动人偶，配有动态姿势、精细服装和收藏家画廊背景。', prompt: "一张超写实的工作室照片，展示一个高级动漫风格的可动人偶。主角为一个身材健硕的东南亚男性，花白头发，胡须整齐，面部与上传照片完全一致，身穿《鬼灭之刃》灶门炭治郎的服装。人偶动态地摆出英雄姿势，手持剑，邪魅地微笑，站在一个厚实的抛光方形铬合金底座上，底座上刻有“Demon Slayer”。他身后站着一个高大的（堕姬）人偶，雕刻细节一丝不苟，更大更具气势。整个人偶和底座在画面中完全可见，放置在一个透明的玻璃展示柜上。背景是成排的动漫手办，陈列在明亮的玻璃展示架中，营造出高级动漫收藏品画廊的氛围。明亮干净的工作室灯光，焦点锐利，无缝反射，光泽饰面。垂直 8K 构图。" },
   ],
   whatsNewTitle: "最新功能",
   whatsNewDate: '2025 年 9 月 8 日',

@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { Translation, PromptExample } from '../locales/translations';
 
@@ -19,12 +17,12 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
 
   // This is a mapping from the key to the list of example objects.
   const categorizedPrompts: Record<string, PromptExample[]> = {
-    popular: [t.promptExamples[0], t.promptExamples[2], t.promptExamples[3], t.promptExamples[4], t.promptExamples[20]],
+    popular: [t.promptExamples[0], t.promptExamples[2], t.promptExamples[3], t.promptExamples[4], t.promptExamples[20], t.promptExamples[21]],
     "3d": [t.promptExamples[0], t.promptExamples[1]],
     photo: [t.promptExamples[2], t.promptExamples[4]],
     fantasy: [t.promptExamples[3], t.promptExamples[20]],
     art: [t.promptExamples[4]],
-    character: [t.promptExamples[1], t.promptExamples[2], t.promptExamples[20]],
+    character: [t.promptExamples[1], t.promptExamples[2], t.promptExamples[20], t.promptExamples[21]],
     scape: [t.promptExamples[3]],
     cute: [], // Add examples if available
     concept: [], // Add examples if available
@@ -102,7 +100,7 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
                 className="w-full px-4 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
                 aria-label="Search prompts"
             />
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-y-auto hide-scrollbar pb-2 md:pb-0 md:pr-2">
               {categories.map(([key, name]) => (
                 <button
                   key={key}
@@ -110,7 +108,7 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
                     setActiveCategoryKey(key);
                     setSearchTerm('');
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  className={`flex-shrink-0 whitespace-nowrap md:w-full text-left px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
                     activeCategoryKey === key && !searchTerm
                       ? 'bg-brand-primary text-white shadow-md'
                       : 'bg-base-300 text-gray-300 hover:bg-brand-primary/50 hover:text-white'
