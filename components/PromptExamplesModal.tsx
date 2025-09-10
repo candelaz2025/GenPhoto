@@ -91,7 +91,9 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
           </button>
         </div>
         
-        <div className="flex-shrink-0 mb-4 space-y-4">
+        <div className="flex flex-col md:flex-row gap-6 flex-grow min-h-0">
+          {/* Left Column: Search and Categories */}
+          <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 flex flex-col gap-4">
             <input
                 type="text"
                 placeholder={t.promptSearchPlaceholder(t.promptCategories[activeCategoryKey] || '')}
@@ -100,31 +102,30 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
                 className="w-full px-4 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
                 aria-label="Search prompts"
             />
-            <div className="relative">
-                <div className="flex space-x-2 overflow-x-auto whitespace-nowrap pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6">
-                    {categories.map(([key, name]) => (
-                        <button
-                            key={key}
-                            onClick={() => {
-                                setActiveCategoryKey(key);
-                                setSearchTerm('');
-                            }}
-                            className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
-                                activeCategoryKey === key && !searchTerm
-                                ? 'bg-brand-primary text-white shadow-md'
-                                : 'bg-base-300 text-gray-300 hover:bg-brand-primary/50 hover:text-white'
-                            }`}
-                        >
-                            {name}
-                        </button>
-                    ))}
-                </div>
+            <div className="flex flex-col space-y-2">
+              {categories.map(([key, name]) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setActiveCategoryKey(key);
+                    setSearchTerm('');
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                    activeCategoryKey === key && !searchTerm
+                      ? 'bg-brand-primary text-white shadow-md'
+                      : 'bg-base-300 text-gray-300 hover:bg-brand-primary/50 hover:text-white'
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
             </div>
-        </div>
-        
-        <div className="overflow-y-auto pr-2 -mr-4 flex-grow">
+          </div>
+
+          {/* Right Column: Prompt Examples Grid */}
+          <div className="overflow-y-auto flex-grow">
             {filteredPrompts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredPrompts.map((example) => (
                     <div key={example.title} className="bg-base-300 rounded-lg flex flex-col overflow-hidden shadow-lg transition-transform transform hover:-translate-y-1">
                         <div className="p-4 flex flex-col flex-grow">
@@ -146,6 +147,7 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
                     <p className="text-sm">{t.promptExamplesNotFoundHint}</p>
                 </div>
             )}
+          </div>
         </div>
       </div>
     </div>
