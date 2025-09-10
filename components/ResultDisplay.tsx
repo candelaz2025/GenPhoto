@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useRef, MouseEvent, WheelEvent, useEffect, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { Result } from '../types';

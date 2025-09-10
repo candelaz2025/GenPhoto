@@ -17,7 +17,6 @@ interface PromptControlsProps {
   style: ArtisticStyle;
   setStyle: (style: ArtisticStyle) => void;
   generationMode: 'image' | 'video';
-  setGenerationMode: (mode: 'image' | 'video') => void;
   videoAspectRatio: AspectRatio;
   setVideoAspectRatio: (ratio: AspectRatio) => void;
   videoCharacterGender: VideoCharacterGender;
@@ -36,7 +35,7 @@ interface PromptControlsProps {
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
     promptTitle, setPromptTitle, prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
-    aspectRatio, setAspectRatio, style, setStyle, generationMode, setGenerationMode, 
+    aspectRatio, setAspectRatio, style, setStyle, generationMode, 
     videoAspectRatio, setVideoAspectRatio, videoCharacterGender, setVideoCharacterGender,
     videoResolution, setVideoResolution, videoScript, setVideoScript,
     onSubmit, onOpenExamples, isLoading, isApiConfigured, imageCount, t
@@ -112,10 +111,6 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     setStyle(newStyleValue);
   };
 
-  const handleModeChange = (mode: 'image' | 'video') => {
-    setGenerationMode(mode);
-  };
-
   const handleVideoPromptTemplate = (template: 'review' | 'unboxing' | 'lifestyle' | 'showcase') => {
       const character = t.service.videoCharacter[videoCharacterGender];
       let generatedPrompt = '';
@@ -172,30 +167,6 @@ const PromptControls: React.FC<PromptControlsProps> = ({
   return (
     <div className="w-full flex flex-col space-y-4">
       
-      <div className="flex flex-col items-center">
-            <label className="font-semibold text-content">{t.modeLabel}</label>
-            <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
-                <button
-                    onClick={() => handleModeChange('image')}
-                    disabled={isLoading}
-                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                    generationMode === 'image' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                    }`}
-                >
-                    {t.modeImage}
-                </button>
-                <button
-                    onClick={() => handleModeChange('video')}
-                    disabled={isLoading}
-                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
-                    generationMode === 'video' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
-                    }`}
-                >
-                    {t.modeVideo}
-                </button>
-            </div>
-        </div>
-
       {generationMode === 'image' && (
         <>
             <div className="flex justify-center animate-fade-in">

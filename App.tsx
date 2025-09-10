@@ -424,6 +424,30 @@ function App() {
             {t.mainDescription}
           </p>
 
+          <div className="flex flex-col items-center">
+            <label className="font-semibold text-content">{t.modeLabel}</label>
+            <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+                <button
+                    onClick={() => setGenerationMode('image')}
+                    disabled={!!loadingMode}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                    generationMode === 'image' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                >
+                    {t.modeImage}
+                </button>
+                <button
+                    onClick={() => setGenerationMode('video')}
+                    disabled={!!loadingMode}
+                    className={`px-4 py-1 text-sm rounded-md transition-colors disabled:cursor-not-allowed ${
+                    generationMode === 'video' ? 'bg-brand-primary text-white shadow' : 'hover:bg-base-300'
+                    }`}
+                >
+                    {t.modeVideo}
+                </button>
+            </div>
+          </div>
+
           <ImageUploader onFileChange={handleFileChange} imageCount={images.length} t={t} />
 
           {images.length > 0 && <ImageGallery images={images} onRemove={handleRemoveImage} t={t} />}
@@ -442,7 +466,6 @@ function App() {
             style={style}
             setStyle={setStyle}
             generationMode={generationMode}
-            setGenerationMode={setGenerationMode}
             videoAspectRatio={videoAspectRatio}
             setVideoAspectRatio={setVideoAspectRatio}
             videoCharacterGender={videoCharacterGender}

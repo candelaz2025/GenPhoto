@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Translation, PromptExample } from '../locales/translations';
 
@@ -18,19 +19,23 @@ const PromptExamplesModal: React.FC<PromptExamplesModalProps> = ({ isOpen, onClo
 
   // This is a mapping from the key to the list of example objects.
   const categorizedPrompts: Record<string, PromptExample[]> = {
-    popular: [t.promptExamples[0], t.promptExamples[2], t.promptExamples[3], t.promptExamples[4]],
+    popular: [t.promptExamples[0], t.promptExamples[2], t.promptExamples[3], t.promptExamples[4], t.promptExamples[20]],
     "3d": [t.promptExamples[0], t.promptExamples[1]],
     photo: [t.promptExamples[2], t.promptExamples[4]],
-    fantasy: [t.promptExamples[3]],
+    fantasy: [t.promptExamples[3], t.promptExamples[20]],
     art: [t.promptExamples[4]],
-    character: [t.promptExamples[1], t.promptExamples[2]],
+    character: [t.promptExamples[1], t.promptExamples[2], t.promptExamples[20]],
     scape: [t.promptExamples[3]],
     cute: [], // Add examples if available
     concept: [], // Add examples if available
+    camera: t.promptExamples.slice(7, 13),
+    lens: t.promptExamples.slice(13, 16),
+    combining: t.promptExamples.length > 16 ? [t.promptExamples[16]] : [],
+    editing: t.promptExamples.length > 19 ? t.promptExamples.slice(17, 20) : [],
   };
   // Add all remaining prompts to their respective primary categories if not already included
   // This part is simplified for demonstration. A full implementation would map all 90+ examples.
-  categorizedPrompts.photo.push(...t.promptExamples.slice(5));
+  categorizedPrompts.photo.push(...t.promptExamples.slice(5, 7));
 
 
   useEffect(() => {
