@@ -33,6 +33,14 @@ export interface Translation {
   aspectRatioLandscape: string;
   aspectRatioPortrait: string;
   inspiringPromptsButton: string;
+  promptArsenalLink: string;
+  poseHelperTitle: string;
+  poseHelperCloseUp: string;
+  poseHelperFullBody: string;
+  poseHelperLowAngle: string;
+  poseHelperHighAngle: string;
+  poseHelperProfile: string;
+  poseHelperEyeLevel: string;
   adHelperTitle: string;
   adHelperStudio: string;
   adHelperLifestyle: string;
@@ -114,7 +122,11 @@ export interface Translation {
   applyWatermark: string;
   watermarkDesc: string;
   watermarkDisclaimer: string;
-  // Fix: Add missing translation keys for ApiKeyModal to resolve type errors.
+  apiKeyStatusLabel: string;
+  apiKeyStatusConnected: string;
+  apiKeyStatusNotSet: string;
+  apiKeyEnterHere: string;
+  apiKeySaveButton: string;
   apiKeyModalTitle: string;
   apiKeyModalDescription: string;
   apiKeyModalSteps: {
@@ -159,6 +171,14 @@ export interface Translation {
     videoPromptLifestyle: (character: string, ratio: string) => string;
     videoPromptShowcase: (ratio: string) => string;
     generateFullVideoPrompt: (basePrompt: string, aspectRatio: string, resolution: string, script: string) => string;
+    poseHelperPrompts: {
+      closeUp: string;
+      fullBody: string;
+      lowAngle: string;
+      highAngle: string;
+      profile: string;
+      eyeLevel: string;
+    };
     adHelperPrompts: {
       studio: string;
       lifestyle: string;
@@ -192,6 +212,14 @@ const en: Translation = {
   aspectRatioLandscape: 'Landscape',
   aspectRatioPortrait: 'Portrait',
   inspiringPromptsButton: 'Let Me Find Ideas',
+  promptArsenalLink: 'AI Prompt Arsenal',
+  poseHelperTitle: '✨ Pose & Angle Helper',
+  poseHelperCloseUp: 'Close-up',
+  poseHelperFullBody: 'Full Body',
+  poseHelperLowAngle: 'Low Angle',
+  poseHelperHighAngle: 'High Angle',
+  poseHelperProfile: 'Profile',
+  poseHelperEyeLevel: 'Eye Level',
   adHelperTitle: '✨ Ad Helper (for uploaded products)',
   adHelperStudio: 'Studio',
   adHelperLifestyle: 'Lifestyle',
@@ -350,25 +378,29 @@ const en: Translation = {
   applyWatermark: "Apply Watermark",
   watermarkDesc: "Upload a PNG to use as a watermark.",
   watermarkDisclaimer: "Watermarking is only available for image generation.",
-  // Fix: Add missing translations for ApiKeyModal.
-  apiKeyModalTitle: 'Setup Your API Key',
-  apiKeyModalDescription: 'To use this application, you need a Google AI API key. Follow these steps:',
+  apiKeyStatusLabel: "API Key Status",
+  apiKeyStatusConnected: "Connected",
+  apiKeyStatusNotSet: "Set API Key",
+  apiKeyEnterHere: "Enter your Google AI API Key",
+  apiKeySaveButton: "Save Key",
+  apiKeyModalTitle: 'Set Your Google AI API Key',
+  apiKeyModalDescription: "To use this app, you need a Google AI API Key. It's stored only in your browser.",
   apiKeyModalSteps: {
     step1: 'Go to',
-    step2: 'Click "Create API key in new project".',
-    step3: 'Copy your generated API key.',
-    step4: 'Create a file named `.env.local` in the project root.',
-    step5: 'In the `.env.local` file, add `API_KEY=\'YOUR_API_KEY\'`, replacing `YOUR_API_KEY` with your copied key.'
+    step2: 'Click "Get API Key".',
+    step3: 'Click "Create API key".',
+    step4: 'Copy your new key.',
+    step5: 'Paste it in the field above and click "Save".'
   },
-  apiKeyModalNote: 'Note: Your API key is for personal use. Keep it secret and do not commit it to version control.',
+  apiKeyModalNote: 'Note: Your API key is stored in your browser\'s local storage and is never sent anywhere except to Google\'s servers for authentication.',
   error: {
     default: 'An unknown error occurred. Please try again.',
     promptOrImage: 'Please provide a prompt or upload an image.',
     fileProcessing: 'An error occurred while processing the file.',
     maxImages: 'You can upload a maximum of 10 images.',
     historyReuse: 'Failed to reuse image from history.',
-    keyNotSet: 'The API_KEY is not configured. Please ensure it is set up in your environment variables.',
-    invalidKey: 'Your API key is not valid. Please check and try again.',
+    keyNotSet: 'API Key not found. Please open the API settings and enter your key.',
+    invalidKey: 'Your API key is not valid. Please check it and try again.',
     rateLimit: 'You have exceeded your API quota. Please try again later.',
     network: 'A network error occurred. Please check your connection.',
     safety: 'The prompt was blocked due to safety policies.',
@@ -406,6 +438,14 @@ const en: Translation = {
         }
         return fullPrompt;
     },
+    poseHelperPrompts: {
+      closeUp: 'A close-up portrait of ',
+      fullBody: 'A full-body shot of ',
+      lowAngle: 'A low-angle shot of ',
+      highAngle: 'A high-angle shot of ',
+      profile: 'A profile shot of ',
+      eyeLevel: 'An eye-level shot of ',
+    },
     adHelperPrompts: {
       studio: `Place the uploaded product on a clean white geometric pedestal in a softly lit studio. The background is a simple pastel color like cream or light blue. Create soft shadows under the product to add depth. Make the image look elegant, minimal, and modern. Professional product photography style, 8k resolution.`,
       lifestyle: `Create a realistic image where the uploaded product is being used in daily life. For instance, if it's sunscreen, place it on a towel by a sunny swimming pool. If it's a coffee mug, have someone holding it in a cozy cafe. Emphasize a natural and relatable look. Beautiful lighting as if shot during the Golden Hour. Lifestyle photography style.`,
@@ -437,6 +477,14 @@ const th: Translation = {
   aspectRatioLandscape: 'แนวนอน',
   aspectRatioPortrait: 'แนวตั้ง',
   inspiringPromptsButton: 'ให้ฉันค้นหาไอเดีย',
+  promptArsenalLink: 'คลังแสง Prompt AI',
+  poseHelperTitle: '✨ ตัวช่วยจัดท่าทางและมุมกล้อง',
+  poseHelperCloseUp: 'โคลสอัพ',
+  poseHelperFullBody: 'เต็มตัว',
+  poseHelperLowAngle: 'มุมต่ำ',
+  poseHelperHighAngle: 'มุมสูง',
+  poseHelperProfile: 'ด้านข้าง',
+  poseHelperEyeLevel: 'ระดับสายตา',
   adHelperTitle: '✨ ตัวช่วยสร้างโฆษณา (สำหรับสินค้าที่อัปโหลด)',
   adHelperStudio: 'สตูดิโอ',
   adHelperLifestyle: 'ไลฟ์สไตล์',
@@ -595,24 +643,28 @@ const th: Translation = {
   applyWatermark: "ใช้ลายน้ำ",
   watermarkDesc: "อัปโหลดไฟล์ PNG เพื่อใช้เป็นลายน้ำ",
   watermarkDisclaimer: "การใส่ลายน้ำใช้ได้กับการสร้างรูปภาพเท่านั้น",
-  // Fix: Add missing translations for ApiKeyModal.
-  apiKeyModalTitle: 'ตั้งค่า API Key ของคุณ',
-  apiKeyModalDescription: 'ในการใช้งานแอปพลิเคชันนี้ คุณต้องมี Google AI API key ทำตามขั้นตอนต่อไปนี้:',
+  apiKeyStatusLabel: "สถานะ API Key",
+  apiKeyStatusConnected: "เชื่อมต่อแล้ว",
+  apiKeyStatusNotSet: "ตั้งค่า API Key",
+  apiKeyEnterHere: "ป้อน Google AI API Key ของคุณ",
+  apiKeySaveButton: "บันทึกคีย์",
+  apiKeyModalTitle: 'ตั้งค่า Google AI API Key ของคุณ',
+  apiKeyModalDescription: "ในการใช้งานแอปนี้ คุณต้องมี Google AI API Key ซึ่งจะถูกเก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น",
   apiKeyModalSteps: {
     step1: 'ไปที่',
-    step2: 'คลิก "สร้าง API key ในโปรเจกต์ใหม่"',
-    step3: 'คัดลอก API key ที่สร้างขึ้นใหม่',
-    step4: 'สร้างไฟล์ชื่อ `.env.local` ในไดเรกทอรีรากของโปรเจกต์',
-    step5: 'ในไฟล์ `.env.local` เพิ่ม `API_KEY=\'YOUR_API_KEY\'` โดยแทนที่ `YOUR_API_KEY` ด้วยคีย์ที่คุณคัดลอกมา'
+    step2: 'คลิก "Get API Key"',
+    step3: 'คลิก "Create API key"',
+    step4: 'คัดลอกคีย์ใหม่ของคุณ',
+    step5: 'วางคีย์ในช่องด้านบนแล้วคลิก "บันทึก"'
   },
-  apiKeyModalNote: 'หมายเหตุ: API key ของคุณมีไว้สำหรับใช้งานส่วนตัว โปรดเก็บเป็นความลับและอย่าคอมมิตเข้าสู่ version control',
+  apiKeyModalNote: 'หมายเหตุ: API key ของคุณจะถูกเก็บไว้ใน local storage ของเบราว์เซอร์ และจะไม่ถูกส่งไปที่ใดนอกจากเซิร์ฟเวอร์ของ Google เพื่อการยืนยันตัวตน',
   error: {
     default: 'เกิดข้อผิดพลาดที่ไม่รู้จัก โปรดลองอีกครั้ง',
     promptOrImage: 'กรุณาป้อนคำสั่งหรืออัปโหลดรูปภาพ',
     fileProcessing: 'เกิดข้อผิดพลาดขณะประมวลผลไฟล์',
     maxImages: 'คุณสามารถอัปโหลดรูปภาพได้สูงสุด 10 รูป',
     historyReuse: 'ไม่สามารถใช้รูปภาพซ้ำจากประวัติได้',
-    keyNotSet: 'API_KEY ยังไม่ได้ตั้งค่า กรุณาตรวจสอบว่าได้ตั้งค่าไว้ใน environment variables แล้ว',
+    keyNotSet: 'ไม่พบ API Key กรุณาเปิดการตั้งค่า API แล้วป้อนคีย์ของคุณ',
     invalidKey: 'API key ของคุณไม่ถูกต้อง โปรดตรวจสอบและลองอีกครั้ง',
     rateLimit: 'คุณใช้โควต้า API เกินกำหนด โปรดลองอีกครั้งในภายหลัง',
     network: 'เกิดข้อผิดพลาดเกี่ยวกับเครือข่าย โปรดตรวจสอบการเชื่อมต่อของคุณ',
@@ -651,6 +703,14 @@ const th: Translation = {
         }
         return fullPrompt;
     },
+    poseHelperPrompts: {
+      closeUp: 'ภาพโคลสอัพของ ',
+      fullBody: 'ภาพเต็มตัวของ ',
+      lowAngle: 'ภาพมุมต่ำของ ',
+      highAngle: 'ภาพมุมสูงของ ',
+      profile: 'ภาพด้านข้างของ ',
+      eyeLevel: 'ภาพระดับสายตาของ ',
+    },
     adHelperPrompts: {
       studio: `วางสินค้าที่อัปโหลดบนแท่นโชว์สินค้าทรงเรขาคณิตสีขาวสะอาดตาในสตูดิโอที่มีแสงสว่างนุ่มนวล พื้นหลังเป็นสีพาสเทลเรียบๆ เช่น สีครีมหรือสีฟ้าอ่อน สร้างเงาที่นุ่มนวลใต้สินค้าเพื่อเพิ่มความลึก ทำให้ภาพดูหรูหรา มินิมอล และทันสมัย สไตล์ภาพถ่ายสินค้ามืออาชีพ ความละเอียด 8k`,
       lifestyle: `สร้างภาพเสมือนจริงที่สินค้าที่อัปโหลดกำลังถูกใช้งานในชีวิตประวัน เช่น หากเป็นครีมกันแดด ให้วางอยู่บนผ้าเช็ดตัวริมสระว่ายน้ำที่มีแดดสดใส หรือหากเป็นแก้วกาแฟ ให้มีคนกำลังถืออยู่ในร้านกาแฟบรรยากาศอบอุ่น เน้นให้ภาพดูเป็นธรรมชาติและเข้าถึงง่าย แสงสวยงามเหมือนถ่ายตอน Golden Hour สไตล์ภาพถ่ายไลฟ์สไตล์`,
@@ -682,6 +742,14 @@ const cn: Translation = {
   aspectRatioLandscape: '横向',
   aspectRatioPortrait: '纵向',
   inspiringPromptsButton: '给我找点子',
+  promptArsenalLink: 'AI 提示词库',
+  poseHelperTitle: '✨ 姿势与角度助手',
+  poseHelperCloseUp: '特写',
+  poseHelperFullBody: '全身',
+  poseHelperLowAngle: '低角度',
+  poseHelperHighAngle: '高角度',
+  poseHelperProfile: '侧面',
+  poseHelperEyeLevel: '平视',
   adHelperTitle: '✨ 广告助手（适用于上传的产品）',
   adHelperStudio: '工作室',
   adHelperLifestyle: '生活方式',
@@ -840,24 +908,28 @@ const cn: Translation = {
   applyWatermark: "应用水印",
   watermarkDesc: "上传 PNG 文件作为水印使用。",
   watermarkDisclaimer: "水印功能仅适用于图像生成。",
-  // Fix: Add missing translations for ApiKeyModal.
-  apiKeyModalTitle: '设置您的 API 密钥',
-  apiKeyModalDescription: '要使用此应用程序，您需要一个 Google AI API 密钥。请按照以下步骤操作：',
+  apiKeyStatusLabel: "API 密钥状态",
+  apiKeyStatusConnected: "已连接",
+  apiKeyStatusNotSet: "设置 API 密钥",
+  apiKeyEnterHere: "输入您的 Google AI API 密钥",
+  apiKeySaveButton: "保存密钥",
+  apiKeyModalTitle: '设置您的 Google AI API 密钥',
+  apiKeyModalDescription: "要使用此应用程序，您需要一个 Google AI API 密钥。它仅存储在您的浏览器中。",
   apiKeyModalSteps: {
     step1: '前往',
-    step2: '点击“在新项目中创建 API 密钥”。',
-    step3: '复制您生成的 API 密钥。',
-    step4: '在项目根目录中创建一个名为 `.env.local` 的文件。',
-    step5: '在 `.env.local` 文件中，添加 `API_KEY=\'YOUR_API_KEY\'`，并将 `YOUR_API_KEY` 替换为您复制的密钥。'
+    step2: '点击“获取 API 密钥”。',
+    step3: '点击“创建 API 密钥”。',
+    step4: '复制您的新密钥。',
+    step5: '将其粘贴到上方的输入框中，然后点击“保存”。'
   },
-  apiKeyModalNote: '注意：您的 API 密钥仅供个人使用。请妥善保管，不要将其提交到版本控制中。',
+  apiKeyModalNote: '注意：您的 API 密钥存储在您浏览器的本地存储中，除了用于身份验证外，绝不会发送到 Google 服务器以外的任何地方。',
   error: {
     default: '发生未知错误。请重试。',
     promptOrImage: '请输入提示或上传图像。',
     fileProcessing: '处理文件时发生错误。',
     maxImages: '您最多可以上传 10 张图片。',
     historyReuse: '无法从历史记录中重用图像。',
-    keyNotSet: 'API_KEY 未配置。请确保它已在您的环境变量中设置。',
+    keyNotSet: '未找到 API 密钥。请打开 API 设置并输入您的密钥。',
     invalidKey: '您的 API 密钥无效。请检查后重试。',
     rateLimit: '您已超出 API 配额。请稍后重试。',
     network: '发生网络错误。请检查您的连接。',
@@ -895,6 +967,14 @@ const cn: Translation = {
             fullPrompt += ` 视频必须包含清晰的画外音，说出以下文字：“${script.trim()}”`;
         }
         return fullPrompt;
+    },
+    poseHelperPrompts: {
+      closeUp: '一张特写肖像，主体是 ',
+      fullBody: '一张全身照，主体是 ',
+      lowAngle: '一张低角度拍摄的照片，主体是 ',
+      highAngle: '一张高角度拍摄的照片，主体是 ',
+      profile: '一张侧面照，主体是 ',
+      eyeLevel: '一张平视角度的照片，主体是 ',
     },
     adHelperPrompts: {
       studio: '将上传的产品放置在光线柔和的工作室中的干净白色几何展台上。背景是柔和的纯色，如奶油色或淡蓝色。在产品下方创造柔和的阴影以增加深度。使图像看起来优雅、简约、现代。专业的商业产品摄影风格，8k分辨率。',

@@ -40,7 +40,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
             >
                 <span>{selectedLanguage.flag}</span>
                 <span className="text-sm font-medium">{selectedLanguage.name}</span>
-                 <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -68,14 +68,42 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ language, setLangua
     );
 };
 
+interface ApiKeyStatusProps {
+    status: 'valid' | 'invalid' | 'idle';
+    onClick: () => void;
+    t: Translation;
+}
+
+const ApiKeyStatus: React.FC<ApiKeyStatusProps> = ({ status, onClick, t }) => {
+    const statusConfig = {
+        valid: { color: 'bg-green-500', text: t.apiKeyStatusConnected },
+        invalid: { color: 'bg-red-500', text: t.apiKeyStatusNotSet },
+        idle: { color: 'bg-yellow-500', text: '...'}
+    };
+
+    const currentStatus = statusConfig[status];
+
+    return (
+        <button
+            onClick={onClick}
+            className="flex items-center gap-2 px-3 py-1.5 bg-base-300 rounded-md hover:bg-base-100 transition-colors"
+            title={t.apiKeyStatusLabel}
+        >
+            <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${currentStatus.color}`}></span>
+            <span className="text-sm font-medium">{currentStatus.text}</span>
+        </button>
+    );
+}
 
 interface HeaderProps {
     t: Translation;
     language: Language;
     setLanguage: (lang: Language) => void;
+    apiKeyStatus: 'valid' | 'invalid' | 'idle';
+    onApiKeyClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ t, language, setLanguage }) => {
+const Header: React.FC<HeaderProps> = ({ t, language, setLanguage, apiKeyStatus, onApiKeyClick }) => {
   return (
     <header className="bg-base-200/50 backdrop-blur-sm sticky top-0 z-10">
       <div className="container mx-auto px-2 sm:px-4 py-4 flex items-center justify-between">
@@ -87,7 +115,10 @@ const Header: React.FC<HeaderProps> = ({ t, language, setLanguage }) => {
           </h1>
         </div>
         <div className="flex-1 flex justify-end">
-          <LanguageSwitcher language={language} setLanguage={setLanguage} />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <ApiKeyStatus status={apiKeyStatus} onClick={onApiKeyClick} t={t} />
+            <LanguageSwitcher language={language} setLanguage={setLanguage} />
+          </div>
         </div>
       </div>
     </header>

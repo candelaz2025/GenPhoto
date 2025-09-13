@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SparklesIcon, VideoIcon } from './IconComponents';
+import { SparklesIcon, VideoIcon, ExternalLinkIcon } from './IconComponents';
 import { AspectRatio, ArtisticStyle, FontStyle, VideoCharacterGender, VideoResolution } from '../types';
 import { Translation } from '../locales/translations';
 
@@ -169,7 +169,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
       
       {generationMode === 'image' && (
         <>
-            <div className="flex justify-center animate-fade-in">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in">
               <button 
                 onClick={onOpenExamples} 
                 className="px-6 py-2 text-md bg-gradient-to-r from-brand-secondary to-brand-primary text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-brand-primary hover:to-brand-secondary transition-all transform hover:scale-105 flex items-center gap-2"
@@ -177,8 +177,45 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                 <SparklesIcon className="w-5 h-5" />
                 {t.inspiringPromptsButton}
               </button>
+              <a 
+                href="https://github.com/PicoTrex/Awesome-Nano-Banana-images/blob/main/README_en.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 text-sm text-brand-light border border-brand-secondary/50 rounded-lg hover:bg-brand-secondary/20 transition-colors flex items-center gap-2"
+              >
+                <ExternalLinkIcon className="w-4 h-4" />
+                <span>{t.promptArsenalLink}</span>
+              </a>
             </div>
           
+            {generationMode === 'image' && imageCount === 0 && (
+              <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-brand-secondary/30">
+                <h3 className="text-center font-semibold text-content">
+                  {t.poseHelperTitle}
+                </h3>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <button onClick={() => { setPromptTitle(t.poseHelperCloseUp); setPrompt(t.service.poseHelperPrompts.closeUp); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    {t.poseHelperCloseUp}
+                  </button>
+                  <button onClick={() => { setPromptTitle(t.poseHelperFullBody); setPrompt(t.service.poseHelperPrompts.fullBody); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    {t.poseHelperFullBody}
+                  </button>
+                  <button onClick={() => { setPromptTitle(t.poseHelperLowAngle); setPrompt(t.service.poseHelperPrompts.lowAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    {t.poseHelperLowAngle}
+                  </button>
+                  <button onClick={() => { setPromptTitle(t.poseHelperHighAngle); setPrompt(t.service.poseHelperPrompts.highAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    {t.poseHelperHighAngle}
+                  </button>
+                   <button onClick={() => { setPromptTitle(t.poseHelperProfile); setPrompt(t.service.poseHelperPrompts.profile); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                     {t.poseHelperProfile}
+                   </button>
+                   <button onClick={() => { setPromptTitle(t.poseHelperEyeLevel); setPrompt(t.service.poseHelperPrompts.eyeLevel); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                     {t.poseHelperEyeLevel}
+                   </button>
+                </div>
+              </div>
+            )}
+
             {imageCount > 0 && (
                 <div className="w-full p-3 bg-base-200/50 rounded-lg animate-fade-in space-y-3 border border-brand-secondary/30">
                   <h3 className="text-center font-semibold text-content">

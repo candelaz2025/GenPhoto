@@ -7,14 +7,15 @@ import { translations } from '../locales/translations';
 /**
  * Creates and returns a Gemini AI client, checking for a valid API key first.
  * @param lang The current language for error messages.
+ * @param apiKey The Google AI API key.
  * @returns An instance of GoogleGenAI.
  */
-const getAiClient = (lang: Language): GoogleGenAI => {
-    // Fail fast with a clear error if the API key is not configured.
-    if (!process.env.API_KEY || process.env.API_KEY === 'YOUR_API_KEY') {
+const getAiClient = (lang: Language, apiKey: string): GoogleGenAI => {
+    // Fail fast with a clear error if the API key is not provided.
+    if (!apiKey) {
         throw new Error(translations[lang].error.keyNotSet);
     }
-    return new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return new GoogleGenAI({ apiKey: apiKey });
 };
 
 /**
@@ -58,6 +59,7 @@ const handleApiError = (error: unknown, lang: Language): string => {
 
 
 export const editImageWithGemini = async (
+  apiKey: string,
   prompt: string,
   images: UploadedImage[],
   aspectRatio: AspectRatio,
@@ -66,7 +68,7 @@ export const editImageWithGemini = async (
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = getAiClient(lang);
+  const ai = getAiClient(lang, apiKey);
 
   if (!prompt && images.length === 0) {
     throw new Error(t.error.promptOrImage);
@@ -151,13 +153,14 @@ export const editImageWithGemini = async (
 };
 
 export const inpaintImageWithGemini = async (
+  apiKey: string,
   prompt: string,
   originalImage: { base64: string; mimeType: string },
   maskImage: { base64: string; mimeType: string },
   lang: Language
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = getAiClient(lang);
+  const ai = getAiClient(lang, apiKey);
   const model = 'gemini-2.5-flash-image-preview';
   
   const fullPrompt = t.service.inpaintInstruction(prompt);
@@ -204,6 +207,7 @@ export const inpaintImageWithGemini = async (
 };
 
 export const generateImageWithImagen = async (
+  apiKey: string,
   prompt: string,
   aspectRatio: AspectRatio,
   lang: Language,
@@ -211,7 +215,7 @@ export const generateImageWithImagen = async (
   fontStyle: FontStyle
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = getAiClient(lang);
+  const ai = getAiClient(lang, apiKey);
 
   if (!prompt) {
     throw new Error(t.error.promptOrImage);
@@ -253,6 +257,7 @@ export const generateImageWithImagen = async (
 
 
 export const generateVideoWithVeo = async (
+  apiKey: string,
   prompt: string,
   images: UploadedImage[],
   lang: Language,
@@ -261,7 +266,7 @@ export const generateVideoWithVeo = async (
   script: string,
 ): Promise<Result> => {
     const t = translations[lang];
-    const ai = getAiClient(lang);
+    const ai = getAiClient(lang, apiKey);
 
     if (!prompt) {
         throw new Error(t.error.promptOrImage);
@@ -301,7 +306,7 @@ export const generateVideoWithVeo = async (
             throw new Error(t.error.videoFinishedNoLink);
         }
         
-        const videoFetchUrl = `${downloadLink}&key=${process.env.API_KEY}`;
+        const videoFetchUrl = `${downloadLink}&key=${apiKey}`;
         const videoResponse = await fetch(videoFetchUrl);
 
         if (!videoResponse.ok) {
@@ -333,12 +338,13 @@ export const generateVideoWithVeo = async (
 };
 
 export const upscaleImage = async (
+  apiKey: string,
   originalImage: { base64: string; mimeType: string },
   factor: number,
   lang: Language
 ): Promise<Result> => {
   const t = translations[lang];
-  const ai = getAiClient(lang);
+  const ai = getAiClient(lang, apiKey);
   const model = 'gemini-2.5-flash-image-preview';
   
   const fullPrompt = t.service.upscaleInstruction(`${factor}x`);

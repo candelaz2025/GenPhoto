@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Translation } from '../locales/translations';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (key: string) => void;
+  currentKey: string;
   t: Translation;
 }
 
-const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, t }) => {
+const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, currentKey, t }) => {
+  const [key, setKey] = useState(currentKey);
+
   if (!isOpen) {
     return null;
   }
+
+  const handleSave = () => {
+    if (key.trim()) {
+      onSave(key.trim());
+    }
+  };
+
   const steps = t.apiKeyModalSteps;
 
   return (
@@ -39,6 +50,27 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, t }) => {
             </svg>
           </button>
         </div>
+        
+        <div className="space-y-4 mb-6">
+            <label htmlFor="api-key-input" className="block text-sm font-medium text-gray-300">{t.apiKeyEnterHere}</label>
+            <div className="relative">
+                <input
+                    id="api-key-input"
+                    type="password"
+                    value={key}
+                    onChange={(e) => setKey(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
+                />
+            </div>
+            <button
+                onClick={handleSave}
+                className="w-full px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors"
+            >
+                {t.apiKeySaveButton}
+            </button>
+        </div>
+
         <div className="space-y-3 text-sm text-gray-300">
           <p>{t.apiKeyModalDescription}</p>
           <ol className="list-decimal list-inside space-y-2 pl-2">

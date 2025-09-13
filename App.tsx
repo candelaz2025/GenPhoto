@@ -11,6 +11,7 @@ import HistoryGallery from './components/HistoryGallery';
 import Loader from './components/Loader';
 import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
+import ApiKeyModal from './components/ApiKeyModal';
 import WatermarkControls from './components/WatermarkControls';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini, upscaleImage } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle, VideoCharacterGender, VideoResolution } from './types';
@@ -28,6 +29,10 @@ const fileToBase64 = (file: File): Promise<string> =>
 const CURRENT_APP_VERSION = '2025-09-08'; // Update this date for new features to trigger the modal
 
 function App() {
+  const [apiKey, setApiKey] = useState<string>('');
+  const [apiKeyStatus, setApiKeyStatus] = useState<'valid' | 'invalid' | 'idle'>('idle');
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [promptTitle, setPromptTitle] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -61,6 +66,18 @@ function App() {
   const [isWatermarkEnabled, setIsWatermarkEnabled] = useState<boolean>(false);
 
   const t = translations[language];
+
+  // Load API key on initial render
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini-api-key');
+    if (savedKey) {
+        setApiKey(savedKey);
+        setApiKeyStatus('valid');
+    } else {
+        setApiKeyStatus('invalid');
+        setIsApiKeyModalOpen(true);
+    }
+  }, []);
 
   // Show "What's New" modal on first visit or after an update
   useEffect(() => {
@@ -128,6 +145,14 @@ function App() {
     setIsWhatsNewModalOpen(false);
     localStorage.setItem('app-last-seen-version', CURRENT_APP_VERSION);
   };
+  
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem('gemini-api-key', key);
+    setApiKeyStatus('valid');
+    setIsApiKeyModalOpen(false);
+    setError(null); // Clear previous key-related errors
+  };
 
   const handleFileChange = async (files: FileList | null) => {
     if (!files) return;
@@ -160,7 +185,16 @@ function App() {
   
   const handleError = (err: unknown) => {
     console.error(err);
-    setError(err instanceof Error ? err.message : t.error.default);
+    const errorMessage = err instanceof Error ? err.message : t.error.default;
+    
+    // Check for invalid API key error and update status
+    const lowerCaseError = errorMessage.toLowerCase();
+    if (lowerCaseError.includes('api key not valid') || lowerCaseError.includes('invalid api key') || lowerCaseError.includes('api_key_invalid')) {
+        setApiKeyStatus('invalid');
+        setIsApiKeyModalOpen(true);
+    }
+
+    setError(errorMessage);
   };
 
   const handleWatermarkUpload = async (file: File) => {
@@ -231,11 +265,22 @@ function App() {
     });
   };
 
-  const handleSubmit = async () => {
+  const preSubmitCheck = (): boolean => {
+    if (!apiKey) {
+      setError(t.error.keyNotSet);
+      setIsApiKeyModalOpen(true);
+      return false;
+    }
     if (!prompt && images.length === 0) {
       setError(t.error.promptOrImage);
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!preSubmitCheck()) return;
+
     setLoadingMode(generationMode);
     setError(null);
     setResult(null);
@@ -247,6 +292,7 @@ function App() {
         let apiResult: Result;
         if (generationMode === 'video') {
             apiResult = await generateVideoWithVeo(
+                apiKey,
                 fullPrompt,
                 images,
                 language,
@@ -257,10 +303,10 @@ function App() {
         } else {
             if (images.length > 0) {
                 apiResult = await editImageWithGemini(
-                    fullPrompt, images, aspectRatio, language, overlayText, fontStyle
+                    apiKey, fullPrompt, images, aspectRatio, language, overlayText, fontStyle
                 );
             } else {
-                apiResult = await generateImageWithImagen(fullPrompt, aspectRatio, language, overlayText, fontStyle);
+                apiResult = await generateImageWithImagen(apiKey, fullPrompt, aspectRatio, language, overlayText, fontStyle);
             }
         }
 
@@ -286,6 +332,11 @@ function App() {
   };
   
   const handleRegenerate = async (originalImage: string, maskImage: string, inpaintPrompt: string) => {
+    if (!apiKey) {
+      setError(t.error.keyNotSet);
+      setIsApiKeyModalOpen(true);
+      throw new Error(t.error.keyNotSet);
+    }
     setLoadingMode('image');
     setError(null);
     
@@ -297,6 +348,7 @@ function App() {
         const maskMimeType = maskHeader.match(/:(.*?);/)?.[1] || 'image/png';
         
         const apiResult = await inpaintImageWithGemini(
+            apiKey,
             inpaintPrompt,
             { base64: data, mimeType },
             { base64: maskData, mimeType: maskMimeType },
@@ -325,13 +377,18 @@ function App() {
   }
 
   const handleUpscale = async (currentImage: string, factor: number) => {
+    if (!apiKey) {
+      setError(t.error.keyNotSet);
+      setIsApiKeyModalOpen(true);
+      return;
+    }
     setLoadingMode('image');
     setError(null);
     try {
       const [header, data] = currentImage.split(',');
       const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
 
-      const apiResult = await upscaleImage({ base64: data, mimeType }, factor, language);
+      const apiResult = await upscaleImage(apiKey, { base64: data, mimeType }, factor, language);
 
       let finalResult = apiResult;
       if (isWatermarkEnabled && watermark && apiResult.image) {
@@ -396,6 +453,13 @@ function App() {
   return (
     <div className="min-h-screen bg-base-100 text-content font-sans">
       {loadingMode && <Loader mode={loadingMode} t={t} />}
+      <ApiKeyModal 
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onSave={handleSaveApiKey}
+        currentKey={apiKey}
+        t={t}
+      />
       <PromptExamplesModal 
         isOpen={isExamplesModalOpen} 
         onClose={() => setIsExamplesModalOpen(false)}
@@ -407,7 +471,13 @@ function App() {
         onClose={handleCloseWhatsNewModal}
         t={t}
       />
-      <Header t={t} language={language} setLanguage={setLanguage} />
+      <Header 
+        t={t} 
+        language={language} 
+        setLanguage={setLanguage}
+        apiKeyStatus={apiKeyStatus}
+        onApiKeyClick={() => setIsApiKeyModalOpen(true)}
+      />
       <main className="container mx-auto p-4 space-y-6">
         <WatermarkControls
           watermark={watermark}
@@ -477,7 +547,7 @@ function App() {
             onSubmit={handleSubmit}
             onOpenExamples={() => setIsExamplesModalOpen(true)}
             isLoading={!!loadingMode}
-            isApiConfigured={true}
+            isApiConfigured={apiKeyStatus === 'valid'}
             imageCount={images.length}
             t={t}
           />
