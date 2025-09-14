@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import { Translation } from '../locales/translations';
+import { Language } from '../types';
+import { testApiKey } from '../services/geminiService';
+import { CheckIcon, XIcon } from './IconComponents';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (key: string) => void;
+  onRemove: () => void;
   currentKey: string;
+  language: Language;
   t: Translation;
 }
 
-const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, currentKey, t }) => {
+const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, onRemove, currentKey, language, t }) => {
   const [key, setKey] = useState(currentKey);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<'success' | 'failure' | null>(null);
+  const [testMessage, setTestMessage] = useState('');
 
   if (!isOpen) {
     return null;
@@ -19,6 +27,35 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, curr
   const handleSave = () => {
     if (key.trim()) {
       onSave(key.trim());
+    }
+  };
+
+  const handleTestConnection = async () => {
+    if (!key.trim()) {
+      setTestResult('failure');
+      setTestMessage(t.error.keyNotSet);
+      setTimeout(() => setTestResult(null), 3000);
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+    setTestMessage('');
+
+    try {
+      await testApiKey(key.trim(), language);
+      setTestResult('success');
+      setTestMessage(t.apiKeyTestSuccess);
+    } catch (error) {
+      setTestResult('failure');
+      const errorMessage = error instanceof Error ? error.message : t.error.default;
+      setTestMessage(errorMessage);
+    } finally {
+      setIsTesting(false);
+      setTimeout(() => {
+        setTestResult(null);
+        setTestMessage('');
+      }, 4000);
     }
   };
 
@@ -63,12 +100,40 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, curr
                     className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
                 />
             </div>
-            <button
-                onClick={handleSave}
-                className="w-full px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors"
-            >
-                {t.apiKeySaveButton}
-            </button>
+            {testResult && (
+              <div
+                className={`flex items-center gap-2 p-2 text-sm rounded-md animate-fade-in ${
+                  testResult === 'success' ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'
+                }`}
+              >
+                {testResult === 'success' ? <CheckIcon className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
+                <span>{testMessage}</span>
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                    onClick={handleSave}
+                    className="flex-grow px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors"
+                >
+                    {t.apiKeySaveButton}
+                </button>
+                <button
+                    onClick={handleTestConnection}
+                    disabled={isTesting}
+                    className="px-4 py-2 bg-base-300 text-content font-semibold rounded-lg hover:bg-base-100 transition-colors disabled:bg-base-300/50 disabled:cursor-wait flex items-center justify-center gap-2"
+                >
+                    {isTesting && <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>}
+                    {isTesting ? t.apiKeyTestingButton : t.apiKeyTestButton}
+                </button>
+            </div>
+            {currentKey && (
+                <button
+                    onClick={onRemove}
+                    className="w-full px-4 py-2 bg-red-800 text-red-100 font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                >
+                    {t.apiKeyRemoveButton}
+                </button>
+            )}
         </div>
 
         <div className="space-y-3 text-sm text-gray-300">

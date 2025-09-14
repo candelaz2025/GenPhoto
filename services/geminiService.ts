@@ -57,6 +57,28 @@ const handleApiError = (error: unknown, lang: Language): string => {
     return t.default;
 };
 
+/**
+ * Tests if a given API key is valid by making a simple API call.
+ * @param apiKey The API key to test.
+ * @param lang The language for potential error messages.
+ * @returns A promise that resolves to true if the key is valid, or throws a handled error message if not.
+ */
+export const testApiKey = async (apiKey: string, lang: Language): Promise<boolean> => {
+    try {
+        const ai = getAiClient(lang, apiKey);
+        // Use a fast model and a simple prompt to test the key with minimal cost/time
+        await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: 'test',
+            config: { thinkingConfig: { thinkingBudget: 0 } }
+        });
+        return true;
+    } catch (error) {
+        // Re-throw the user-friendly error message
+        throw new Error(handleApiError(error, lang));
+    }
+};
+
 
 export const editImageWithGemini = async (
   apiKey: string,

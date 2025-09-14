@@ -154,6 +154,13 @@ function App() {
     setError(null); // Clear previous key-related errors
   };
 
+  const handleRemoveApiKey = () => {
+    setApiKey('');
+    localStorage.removeItem('gemini-api-key');
+    setApiKeyStatus('invalid');
+    setIsApiKeyModalOpen(false);
+  };
+
   const handleFileChange = async (files: FileList | null) => {
     if (!files) return;
     
@@ -457,7 +464,9 @@ function App() {
         isOpen={isApiKeyModalOpen}
         onClose={() => setIsApiKeyModalOpen(false)}
         onSave={handleSaveApiKey}
+        onRemove={handleRemoveApiKey}
         currentKey={apiKey}
+        language={language}
         t={t}
       />
       <PromptExamplesModal 

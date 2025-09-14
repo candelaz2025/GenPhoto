@@ -127,6 +127,10 @@ export interface Translation {
   apiKeyStatusNotSet: string;
   apiKeyEnterHere: string;
   apiKeySaveButton: string;
+  apiKeyRemoveButton: string;
+  apiKeyTestButton: string;
+  apiKeyTestingButton: string;
+  apiKeyTestSuccess: string;
   apiKeyModalTitle: string;
   apiKeyModalDescription: string;
   apiKeyModalSteps: {
@@ -383,6 +387,10 @@ const en: Translation = {
   apiKeyStatusNotSet: "Set API Key",
   apiKeyEnterHere: "Enter your Google AI API Key",
   apiKeySaveButton: "Save Key",
+  apiKeyRemoveButton: "Disconnect Key",
+  apiKeyTestButton: "Test Connection",
+  apiKeyTestingButton: "Testing...",
+  apiKeyTestSuccess: "Connection successful!",
   apiKeyModalTitle: 'Set Your Google AI API Key',
   apiKeyModalDescription: "To use this app, you need a Google AI API Key. It's stored only in your browser.",
   apiKeyModalSteps: {
@@ -648,6 +656,10 @@ const th: Translation = {
   apiKeyStatusNotSet: "ตั้งค่า API Key",
   apiKeyEnterHere: "ป้อน Google AI API Key ของคุณ",
   apiKeySaveButton: "บันทึกคีย์",
+  apiKeyRemoveButton: "ยกเลิกการเชื่อมต่อ",
+  apiKeyTestButton: "ทดสอบการเชื่อมต่อ",
+  apiKeyTestingButton: "กำลังทดสอบ...",
+  apiKeyTestSuccess: "การเชื่อมต่อสำเร็จ!",
   apiKeyModalTitle: 'ตั้งค่า Google AI API Key ของคุณ',
   apiKeyModalDescription: "ในการใช้งานแอปนี้ คุณต้องมี Google AI API Key ซึ่งจะถูกเก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น",
   apiKeyModalSteps: {
@@ -913,6 +925,10 @@ const cn: Translation = {
   apiKeyStatusNotSet: "设置 API 密钥",
   apiKeyEnterHere: "输入您的 Google AI API 密钥",
   apiKeySaveButton: "保存密钥",
+  apiKeyRemoveButton: "断开连接",
+  apiKeyTestButton: "测试连接",
+  apiKeyTestingButton: "测试中...",
+  apiKeyTestSuccess: "连接成功！",
   apiKeyModalTitle: '设置您的 Google AI API 密钥',
   apiKeyModalDescription: "要使用此应用程序，您需要一个 Google AI API 密钥。它仅存储在您的浏览器中。",
   apiKeyModalSteps: {
