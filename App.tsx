@@ -13,6 +13,8 @@ import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import ApiKeyModal from './components/ApiKeyModal';
 import WatermarkControls from './components/WatermarkControls';
+import FloatingMenu from './components/FloatingMenu';
+import HowToUseModal from './components/HowToUseModal';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini, upscaleImage } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle, VideoCharacterGender, VideoResolution } from './types';
 import { translations, PromptExample } from './locales/translations';
@@ -61,6 +63,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false);
+  const [isHowToUseModalOpen, setIsHowToUseModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
   const [watermark, setWatermark] = useState<string | null>(null);
   const [isWatermarkEnabled, setIsWatermarkEnabled] = useState<boolean>(false);
@@ -480,6 +483,11 @@ function App() {
         onClose={handleCloseWhatsNewModal}
         t={t}
       />
+      <HowToUseModal
+        isOpen={isHowToUseModalOpen}
+        onClose={() => setIsHowToUseModalOpen(false)}
+        t={t}
+      />
       <Header 
         t={t} 
         language={language} 
@@ -580,6 +588,7 @@ function App() {
         
       </main>
       <Footer t={t} />
+      <FloatingMenu onHowToUseClick={() => setIsHowToUseModalOpen(true)} t={t} />
     </div>
   );
 }

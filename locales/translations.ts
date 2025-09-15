@@ -12,6 +12,11 @@ export interface WhatsNewFeature {
   description: string;
 }
 
+export interface HowToUseSection {
+    title: string;
+    content: string;
+}
+
 export interface Translation {
   appName: string;
   createdBy: string;
@@ -141,6 +146,15 @@ export interface Translation {
     step5: string;
   };
   apiKeyModalNote: string;
+  floatingMenu: {
+    howToUse: string;
+    facebookPage: string;
+  };
+  howToUseModal: {
+    title: string;
+    closeButton: string;
+    sections: HowToUseSection[];
+  };
   error: {
     default: string;
     promptOrImage: string;
@@ -401,6 +415,22 @@ const en: Translation = {
     step5: 'Paste it in the field above and click "Save".'
   },
   apiKeyModalNote: 'Note: Your API key is stored in your browser\'s local storage and is never sent anywhere except to Google\'s servers for authentication.',
+  floatingMenu: {
+    howToUse: 'How to Use',
+    facebookPage: 'Facebook Page'
+  },
+  howToUseModal: {
+    title: 'How to Use the App',
+    closeButton: 'Got it!',
+    sections: [
+        { title: '1. Set Your API Key', content: 'Before you start, click the "Set API Key" button in the header. Follow the instructions to get your free key from Google AI Studio and save it. The app will remember it for you.' },
+        { title: '2. Choose Your Mode: Image or Video', content: 'Use the toggle to switch between generating images or videos. Note that video generation takes longer and is more resource-intensive.' },
+        { title: '3. Generate from Text', content: 'Simply type a description of what you want to create in the prompt box. Use the helpers for Poses, Styles, and Ads to get ideas. Then click "Generate Image" or "Generate Video".' },
+        { title: '4. Generate from an Image', content: 'Upload one or more images. You can then write a prompt to edit them (e.g., "change the background to a beach") or combine them (if you upload multiple). The AI will use your images as a reference.' },
+        { title: '5. Edit Your Results', content: 'After an image is generated, click the "Edit" button. You can crop, rotate, adjust colors, or use the in-painting tool. To in-paint, select the brush, draw a mask over the area to change, and type a prompt describing the change.' },
+        { title: '6. Upscale & Save', content: 'Use the "Upscale" buttons to increase your image\'s resolution. Use the "Download" button to save it to your device or "Save to History" to add it to the gallery below.' }
+    ]
+  },
   error: {
     default: 'An unknown error occurred. Please try again.',
     promptOrImage: 'Please provide a prompt or upload an image.',
@@ -670,6 +700,22 @@ const th: Translation = {
     step5: 'วางคีย์ในช่องด้านบนแล้วคลิก "บันทึก"'
   },
   apiKeyModalNote: 'หมายเหตุ: API key ของคุณจะถูกเก็บไว้ใน local storage ของเบราว์เซอร์ และจะไม่ถูกส่งไปที่ใดนอกจากเซิร์ฟเวอร์ของ Google เพื่อการยืนยันตัวตน',
+  floatingMenu: {
+    howToUse: 'วิธีใช้งาน',
+    facebookPage: 'เพจ Facebook'
+  },
+  howToUseModal: {
+    title: 'วิธีใช้งานแอปพลิเคชัน',
+    closeButton: 'เข้าใจแล้ว!',
+    sections: [
+        { title: '1. ตั้งค่า API Key ของคุณ', content: 'ก่อนเริ่มใช้งาน คลิกปุ่ม "Set API Key" ที่ส่วนหัว ทำตามคำแนะนำเพื่อรับคีย์ฟรีจาก Google AI Studio และบันทึกคีย์นั้น แอปจะจดจำคีย์ไว้ให้คุณ' },
+        { title: '2. เลือกโหมด: รูปภาพ หรือ วิดีโอ', content: 'ใช้ปุ่มสลับเพื่อเลือกระหว่างการสร้างรูปภาพหรือวิดีโอ โปรดทราบว่าการสร้างวิดีโอใช้เวลานานและใช้ทรัพยากรมากกว่า' },
+        { title: '3. สร้างจากข้อความ', content: 'เพียงพิมพ์คำอธิบายสิ่งที่คุณต้องการสร้างในช่อง prompt ใช้ตัวช่วยสำหรับท่าทาง สไตล์ และโฆษณาเพื่อหาไอเดีย จากนั้นคลิก "Generate Image" หรือ "Generate Video"' },
+        { title: '4. สร้างจากรูปภาพ', content: 'อัปโหลดรูปภาพหนึ่งรูปหรือมากกว่า จากนั้นคุณสามารถเขียน prompt เพื่อแก้ไข (เช่น "เปลี่ยนพื้นหลังเป็นชายหาด") หรือรวมรูปภาพ (หากอัปโหลดหลายรูป) AI จะใช้รูปภาพของคุณเป็นข้อมูลอ้างอิง' },
+        { title: '5. แก้ไขผลลัพธ์ของคุณ', content: 'หลังจากสร้างรูปภาพแล้ว คลิกปุ่ม "Edit" คุณสามารถครอบตัด หมุน ปรับสี หรือใช้เครื่องมือ in-painting หากต้องการใช้ in-painting ให้เลือกแปรง วาดมาสก์ทับบริเวณที่ต้องการเปลี่ยนแปลง แล้วพิมพ์ prompt อธิบายการเปลี่ยนแปลง' },
+        { title: '6. ขยายขนาดและบันทึก', content: 'ใช้ปุ่ม "Upscale" เพื่อเพิ่มความละเอียดของรูปภาพของคุณ ใช้ปุ่ม "Download" เพื่อบันทึกลงในอุปกรณ์ของคุณ หรือ "Save to History" เพื่อเพิ่มลงในแกลเลอรีด้านล่าง' }
+    ]
+  },
   error: {
     default: 'เกิดข้อผิดพลาดที่ไม่รู้จัก โปรดลองอีกครั้ง',
     promptOrImage: 'กรุณาป้อนคำสั่งหรืออัปโหลดรูปภาพ',
@@ -939,6 +985,22 @@ const cn: Translation = {
     step5: '将其粘贴到上方的输入框中，然后点击“保存”。'
   },
   apiKeyModalNote: '注意：您的 API 密钥存储在您浏览器的本地存储中，除了用于身份验证外，绝不会发送到 Google 服务器以外的任何地方。',
+  floatingMenu: {
+    howToUse: '如何使用',
+    facebookPage: 'Facebook 页面'
+  },
+  howToUseModal: {
+    title: '如何使用本应用',
+    closeButton: '好的！',
+    sections: [
+        { title: '1. 设置您的 API 密钥', content: '开始前，请点击标题栏中的“设置 API 密钥”按钮。按照说明从 Google AI Studio 获取您的免费密钥并保存。应用程序会为您记住它。' },
+        { title: '2. 选择您的模式：图像或视频', content: '使用切换按钮在生成图像或视频之间切换。请注意，视频生成时间更长，消耗资源更多。' },
+        { title: '3. 从文本生成', content: '只需在提示框中输入您想要创建的内容的描述。使用姿势、风格和广告助手获取灵感。然后点击“生成图像”或“生成视频”。' },
+        { title: '4. 从图像生成', content: '上传一张或多张图像。然后您可以编写提示来编辑它们（例如，“将背景更改为海滩”）或将它们组合（如果您上传了多张）。AI 将使用您的图像作为参考。' },
+        { title: '5. 编辑您的结果', content: '生成图像后，点击“编辑”按钮。您可以裁剪、旋转、调整颜色或使用修复工具。要进行修复，请选择画笔，在要更改的区域上绘制蒙版，然后输入描述更改的提示。' },
+        { title: '6. 放大和保存', content: '使用“放大”按钮来提高图像的分辨率。使用“下载”按钮将其保存到您的设备，或使用“保存到历史记录”将其添加到下方的图库中。' }
+    ]
+  },
   error: {
     default: '发生未知错误。请重试。',
     promptOrImage: '请输入提示或上传图像。',
