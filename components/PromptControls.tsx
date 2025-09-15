@@ -4,8 +4,6 @@ import { AspectRatio, ArtisticStyle, FontStyle, VideoCharacterGender, VideoResol
 import { Translation } from '../locales/translations';
 
 interface PromptControlsProps {
-  promptTitle: string;
-  setPromptTitle: React.Dispatch<React.SetStateAction<string>>;
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   overlayText: string;
@@ -34,7 +32,7 @@ interface PromptControlsProps {
 }
 
 const PromptControls: React.FC<PromptControlsProps> = ({ 
-    promptTitle, setPromptTitle, prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
+    prompt, setPrompt, overlayText, setOverlayText, fontStyle, setFontStyle,
     aspectRatio, setAspectRatio, style, setStyle, generationMode, 
     videoAspectRatio, setVideoAspectRatio, videoCharacterGender, setVideoCharacterGender,
     videoResolution, setVideoResolution, videoScript, setVideoScript,
@@ -116,19 +114,15 @@ const PromptControls: React.FC<PromptControlsProps> = ({
       let generatedPrompt = '';
       switch (template) {
           case 'review':
-              setPromptTitle(t.videoAdHelperReview);
               generatedPrompt = t.service.videoPromptReview(character, videoAspectRatio);
               break;
           case 'unboxing':
-              setPromptTitle(t.videoAdHelperUnboxing);
               generatedPrompt = t.service.videoPromptUnboxing(character, videoAspectRatio);
               break;
           case 'lifestyle':
-              setPromptTitle(t.videoAdHelperLifestyle);
               generatedPrompt = t.service.videoPromptLifestyle(character, videoAspectRatio);
               break;
           case 'showcase':
-              setPromptTitle(t.videoAdHelperShowcase);
               generatedPrompt = t.service.videoPromptShowcase(videoAspectRatio);
               break;
       }
@@ -194,22 +188,22 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                   {t.poseHelperTitle}
                 </h3>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <button onClick={() => { setPromptTitle(t.poseHelperCloseUp); setPrompt(t.service.poseHelperPrompts.closeUp); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                  <button onClick={() => { setPrompt(t.service.poseHelperPrompts.closeUp); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                     {t.poseHelperCloseUp}
                   </button>
-                  <button onClick={() => { setPromptTitle(t.poseHelperFullBody); setPrompt(t.service.poseHelperPrompts.fullBody); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                  <button onClick={() => { setPrompt(t.service.poseHelperPrompts.fullBody); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                     {t.poseHelperFullBody}
                   </button>
-                  <button onClick={() => { setPromptTitle(t.poseHelperLowAngle); setPrompt(t.service.poseHelperPrompts.lowAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                  <button onClick={() => { setPrompt(t.service.poseHelperPrompts.lowAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                     {t.poseHelperLowAngle}
                   </button>
-                  <button onClick={() => { setPromptTitle(t.poseHelperHighAngle); setPrompt(t.service.poseHelperPrompts.highAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                  <button onClick={() => { setPrompt(t.service.poseHelperPrompts.highAngle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                     {t.poseHelperHighAngle}
                   </button>
-                   <button onClick={() => { setPromptTitle(t.poseHelperProfile); setPrompt(t.service.poseHelperPrompts.profile); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                   <button onClick={() => { setPrompt(t.service.poseHelperPrompts.profile); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                      {t.poseHelperProfile}
                    </button>
-                   <button onClick={() => { setPromptTitle(t.poseHelperEyeLevel); setPrompt(t.service.poseHelperPrompts.eyeLevel); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                   <button onClick={() => { setPrompt(t.service.poseHelperPrompts.eyeLevel); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                      {t.poseHelperEyeLevel}
                    </button>
                 </div>
@@ -222,19 +216,19 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                     {t.adHelperTitle}
                   </h3>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <button onClick={() => { setPromptTitle(t.adHelperStudio); setPrompt(t.service.adHelperPrompts.studio); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    <button onClick={() => { setPrompt(t.service.adHelperPrompts.studio); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                       {t.adHelperStudio}
                     </button>
-                    <button onClick={() => { setPromptTitle(t.adHelperLifestyle); setPrompt(t.service.adHelperPrompts.lifestyle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    <button onClick={() => { setPrompt(t.service.adHelperPrompts.lifestyle); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                       {t.adHelperLifestyle}
                     </button>
-                    <button onClick={() => { setPromptTitle(t.adHelperNature); setPrompt(t.service.adHelperPrompts.nature); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    <button onClick={() => { setPrompt(t.service.adHelperPrompts.nature); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                       {t.adHelperNature}
                     </button>
-                    <button onClick={() => { setPromptTitle(t.adHelperLuxurious); setPrompt(t.service.adHelperPrompts.luxurious); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                    <button onClick={() => { setPrompt(t.service.adHelperPrompts.luxurious); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                       {t.adHelperLuxurious}
                     </button>
-                     <button onClick={() => { setPromptTitle(t.adHelperProductMockup); setPrompt(t.service.adHelperPrompts.productMockup); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
+                     <button onClick={() => { setPrompt(t.service.adHelperPrompts.productMockup); }} className="px-3 py-1 text-sm bg-base-300 rounded-full hover:bg-brand-primary/50 transition-colors">
                        {t.adHelperProductMockup}
                      </button>
                   </div>
@@ -324,18 +318,8 @@ const PromptControls: React.FC<PromptControlsProps> = ({
       )}
 
       <div className="w-full p-4 bg-base-200/50 rounded-lg space-y-3">
-        <label htmlFor="prompt-title-input" className="block text-sm font-semibold text-content">{t.promptTitleLabel}</label>
-        <input
-            id="prompt-title-input"
-            type="text"
-            value={promptTitle}
-            onChange={(e) => setPromptTitle(e.target.value)}
-            placeholder={t.promptTitlePlaceholder}
-            className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none"
-            disabled={commonButtonDisabled}
-        />
+        <label htmlFor="prompt-body-input" className="block text-sm font-semibold text-content">{t.promptCommandLabel}</label>
         <div ref={promptWrapperRef} className="relative w-full">
-            <label htmlFor="prompt-body-input" className="sr-only">{t.promptPlaceholderDefault}</label>
             <textarea
             id="prompt-body-input"
             value={prompt}

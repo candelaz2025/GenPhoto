@@ -13,8 +13,6 @@ import PromptExamplesModal from './components/PromptExamplesModal';
 import WhatsNewModal from './components/WhatsNewModal';
 import ApiKeyModal from './components/ApiKeyModal';
 import WatermarkControls from './components/WatermarkControls';
-import FloatingMenu from './components/FloatingMenu';
-import HowToUseModal from './components/HowToUseModal';
 import { editImageWithGemini, generateImageWithImagen, generateVideoWithVeo, inpaintImageWithGemini, upscaleImage } from './services/geminiService';
 import { UploadedImage, Result, HistoryItem, AspectRatio, ArtisticStyle, Language, FontStyle, VideoCharacterGender, VideoResolution } from './types';
 import { translations, PromptExample } from './locales/translations';
@@ -36,7 +34,6 @@ function App() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
   const [images, setImages] = useState<UploadedImage[]>([]);
-  const [promptTitle, setPromptTitle] = useState('');
   const [prompt, setPrompt] = useState('');
   const [language, setLanguage] = useState<Language>(
     () => (localStorage.getItem('app-language') as Language) || 'th'
@@ -63,7 +60,6 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isExamplesModalOpen, setIsExamplesModalOpen] = useState(false);
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false);
-  const [isHowToUseModalOpen, setIsHowToUseModalOpen] = useState(false);
   const [generationMode, setGenerationMode] = useState<'image' | 'video'>('image');
   const [watermark, setWatermark] = useState<string | null>(null);
   const [isWatermarkEnabled, setIsWatermarkEnabled] = useState<boolean>(false);
@@ -295,8 +291,7 @@ function App() {
     setError(null);
     setResult(null);
 
-    // Combine title and prompt
-    const fullPrompt = promptTitle ? `${promptTitle}: ${prompt}` : prompt;
+    const fullPrompt = prompt;
 
     try {
         let apiResult: Result;
@@ -455,7 +450,6 @@ function App() {
   }
 
   const handleSelectPrompt = (example: PromptExample) => {
-    setPromptTitle(example.title);
     setPrompt(example.prompt);
     setIsExamplesModalOpen(false);
   };
@@ -483,11 +477,6 @@ function App() {
         onClose={handleCloseWhatsNewModal}
         t={t}
       />
-      <HowToUseModal
-        isOpen={isHowToUseModalOpen}
-        onClose={() => setIsHowToUseModalOpen(false)}
-        t={t}
-      />
       <Header 
         t={t} 
         language={language} 
@@ -496,16 +485,6 @@ function App() {
         onApiKeyClick={() => setIsApiKeyModalOpen(true)}
       />
       <main className="container mx-auto p-4 space-y-6">
-        <WatermarkControls
-          watermark={watermark}
-          isWatermarkEnabled={isWatermarkEnabled}
-          generationMode={generationMode}
-          onWatermarkUpload={handleWatermarkUpload}
-          onRemoveWatermark={handleRemoveWatermark}
-          onToggleWatermark={handleToggleWatermark}
-          t={t}
-        />
-
         <div className="max-w-5xl mx-auto flex flex-col items-center space-y-4">
           <p className="text-center text-lg">
             {t.mainDescription}
@@ -540,8 +519,6 @@ function App() {
           {images.length > 0 && <ImageGallery images={images} onRemove={handleRemoveImage} t={t} />}
 
           <PromptControls
-            promptTitle={promptTitle}
-            setPromptTitle={setPromptTitle}
             prompt={prompt}
             setPrompt={setPrompt}
             overlayText={overlayText}
@@ -569,6 +546,16 @@ function App() {
             t={t}
           />
           
+          <WatermarkControls
+            watermark={watermark}
+            isWatermarkEnabled={isWatermarkEnabled}
+            generationMode={generationMode}
+            onWatermarkUpload={handleWatermarkUpload}
+            onRemoveWatermark={handleRemoveWatermark}
+            onToggleWatermark={handleToggleWatermark}
+            t={t}
+          />
+
           {error && (
             <div 
               className="w-full p-4 my-2 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-center flex items-center justify-center gap-3 animate-fade-in"
@@ -588,7 +575,6 @@ function App() {
         
       </main>
       <Footer t={t} />
-      <FloatingMenu onHowToUseClick={() => setIsHowToUseModalOpen(true)} t={t} />
     </div>
   );
 }
